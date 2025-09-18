@@ -1,39 +1,37 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
-import type { Job } from "./JobCard";
+import { useCreateJob } from "@/hooks/useJobs";
 
-interface AddJobDialogProps {
-  onAddJob: (job: Omit<Job, "id" | "createdAt" | "notes" | "parts">) => void;
-}
-
-export const AddJobDialog = ({ onAddJob }: AddJobDialogProps) => {
+export const AddJobDialog = () => {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
-    customerName: "",
-    boatName: "",
-    boatType: "",
+    customer_name: "",
+    boat_name: "",
+    boat_type: "",
     description: "",
-    hourlyRate: 85,
+    hourly_rate: 75,
   });
+
+  const createJobMutation = useCreateJob();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAddJob({
+    createJobMutation.mutate({
       ...formData,
-      status: "pending",
-      totalHours: 0,
+      status: "active" as const,
+      total_hours: 0,
     });
     setFormData({
-      customerName: "",
-      boatName: "",
-      boatType: "",
+      customer_name: "",
+      boat_name: "",
+      boat_type: "",
       description: "",
-      hourlyRate: 85,
+      hourly_rate: 75,
     });
     setOpen(false);
   };
@@ -56,8 +54,8 @@ export const AddJobDialog = ({ onAddJob }: AddJobDialogProps) => {
               <Label htmlFor="customerName">Customer Name</Label>
               <Input
                 id="customerName"
-                value={formData.customerName}
-                onChange={(e) => setFormData(prev => ({ ...prev, customerName: e.target.value }))}
+                value={formData.customer_name}
+                onChange={(e) => setFormData(prev => ({ ...prev, customer_name: e.target.value }))}
                 required
               />
             </div>
@@ -65,8 +63,8 @@ export const AddJobDialog = ({ onAddJob }: AddJobDialogProps) => {
               <Label htmlFor="boatName">Boat Name</Label>
               <Input
                 id="boatName"
-                value={formData.boatName}
-                onChange={(e) => setFormData(prev => ({ ...prev, boatName: e.target.value }))}
+                value={formData.boat_name}
+                onChange={(e) => setFormData(prev => ({ ...prev, boat_name: e.target.value }))}
                 required
               />
             </div>
@@ -77,8 +75,8 @@ export const AddJobDialog = ({ onAddJob }: AddJobDialogProps) => {
               <Label htmlFor="boatType">Boat Type</Label>
               <Input
                 id="boatType"
-                value={formData.boatType}
-                onChange={(e) => setFormData(prev => ({ ...prev, boatType: e.target.value }))}
+                value={formData.boat_type}
+                onChange={(e) => setFormData(prev => ({ ...prev, boat_type: e.target.value }))}
                 placeholder="e.g., Outboard, Inboard, Diesel"
                 required
               />
@@ -88,8 +86,8 @@ export const AddJobDialog = ({ onAddJob }: AddJobDialogProps) => {
               <Input
                 id="hourlyRate"
                 type="number"
-                value={formData.hourlyRate}
-                onChange={(e) => setFormData(prev => ({ ...prev, hourlyRate: parseFloat(e.target.value) || 0 }))}
+                value={formData.hourly_rate}
+                onChange={(e) => setFormData(prev => ({ ...prev, hourly_rate: parseFloat(e.target.value) || 0 }))}
                 required
               />
             </div>
@@ -110,8 +108,8 @@ export const AddJobDialog = ({ onAddJob }: AddJobDialogProps) => {
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit">
-              Create Job
+            <Button type="submit" disabled={createJobMutation.isPending}>
+              {createJobMutation.isPending ? "Creating..." : "Create Job"}
             </Button>
           </div>
         </form>

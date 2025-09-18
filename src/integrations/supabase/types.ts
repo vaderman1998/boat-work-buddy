@@ -14,7 +14,109 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      job_notes: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          job_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          job_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          job_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_notes_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_parts: {
+        Row: {
+          cost_per_unit: number
+          created_at: string
+          id: string
+          job_id: string
+          name: string
+          quantity: number
+        }
+        Insert: {
+          cost_per_unit: number
+          created_at?: string
+          id?: string
+          job_id: string
+          name: string
+          quantity?: number
+        }
+        Update: {
+          cost_per_unit?: number
+          created_at?: string
+          id?: string
+          job_id?: string
+          name?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_parts_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          boat_name: string
+          boat_type: string
+          created_at: string
+          customer_name: string
+          description: string
+          hourly_rate: number
+          id: string
+          status: string
+          total_hours: number
+          updated_at: string
+        }
+        Insert: {
+          boat_name: string
+          boat_type: string
+          created_at?: string
+          customer_name: string
+          description: string
+          hourly_rate?: number
+          id?: string
+          status?: string
+          total_hours?: number
+          updated_at?: string
+        }
+        Update: {
+          boat_name?: string
+          boat_type?: string
+          created_at?: string
+          customer_name?: string
+          description?: string
+          hourly_rate?: number
+          id?: string
+          status?: string
+          total_hours?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

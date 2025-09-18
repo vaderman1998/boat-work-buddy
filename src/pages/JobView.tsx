@@ -1,96 +1,51 @@
 import { useParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Anchor, Clock, DollarSign, FileText, ArrowLeft } from "lucide-react";
-import { useState, useEffect } from "react";
-import type { Job } from "@/components/JobCard";
-import marinaBg from "@/assets/marina-workshop.jpg";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Anchor, Clock, DollarSign, FileText } from "lucide-react";
+import { useJobs, useJobParts, useJobNotes } from "@/hooks/useJobs";
+import backgroundImage from "@/assets/marina-workshop.jpg";
 
-const JobView = () => {
+export default function JobView() {
   const { jobId } = useParams<{ jobId: string }>();
-  const [job, setJob] = useState<Job | null>(null);
+  const { data: jobs = [], isLoading: jobsLoading } = useJobs();
+  const { data: parts = [], isLoading: partsLoading } = useJobParts(jobId || '');
+  const { data: notes = [], isLoading: notesLoading } = useJobNotes(jobId || '');
+  
+  const job = jobs.find(j => j.id === jobId);
+  const isLoading = jobsLoading || partsLoading || notesLoading;
 
-  useEffect(() => {
-    // In a real app, this would fetch from an API or database
-    // For now, we'll get it from localStorage or use mock data
-    const mockJobs: Job[] = [
-      {
-        id: "1",
-        customerName: "John Smith",
-        boatName: "Sea Breeze",
-        boatType: "Outboard Motor",
-        description: "Engine overheating issue, need to replace thermostat and check cooling system",
-        status: "in-progress",
-        totalHours: 2.5,
-        hourlyRate: 85,
-        notes: [
-          {
-            id: "note-1",
-            content: "Removed thermostat - found it was stuck closed. Water pump looks good.",
-            timestamp: new Date(2024, 0, 15, 10, 30),
-          },
-          {
-            id: "note-2", 
-            content: "Installed new thermostat. Testing cooling system - temperature running normal now.",
-            timestamp: new Date(2024, 0, 15, 14, 15),
-          }
-        ],
-        parts: [
-          {
-            id: "part-1",
-            name: "Thermostat",
-            cost: 45.99,
-            quantity: 1,
-            timestamp: new Date(2024, 0, 15, 14, 0),
-          },
-          {
-            id: "part-2",
-            name: "Gasket Set",
-            cost: 12.50,
-            quantity: 1,
-            timestamp: new Date(2024, 0, 15, 14, 5),
-          }
-        ],
-        createdAt: new Date(2024, 0, 15),
-      },
-      {
-        id: "2",
-        customerName: "Marina Del Rey",
-        boatName: "Ocean Explorer",
-        boatType: "Diesel Inboard",
-        description: "Fuel injector cleaning and engine tune-up required",
-        status: "pending",
-        totalHours: 0,
-        hourlyRate: 95,
-        notes: [],
-        parts: [],
-        createdAt: new Date(2024, 0, 16),
-      },
-    ];
-
-    const foundJob = mockJobs.find(j => j.id === jobId);
-    setJob(foundJob || null);
-  }, [jobId]);
-
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
       month: 'long',
       day: 'numeric',
-      year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit',
-    }).format(date);
+      minute: '2-digit'
+    });
   };
 
-  const formatShortDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
+  const formatShortDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date);
+      year: 'numeric'
+    });
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading job details...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!job) {
     return (
@@ -112,16 +67,17 @@ const JobView = () => {
     );
   }
 
-  const totalCost = job.totalHours * job.hourlyRate + job.parts.reduce((sum, part) => sum + (part.cost * part.quantity), 0);
-  const partsCost = job.parts.reduce((sum, part) => sum + (part.cost * part.quantity), 0);
-  const laborCost = job.totalHours * job.hourlyRate;
+  // Calculate costs
+  const partsCost = parts.reduce((total, part) => total + (part.quantity * part.cost_per_unit), 0);
+  const laborCost = job.total_hours * job.hourly_rate;
+  const totalCost = partsCost + laborCost;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-maritime-light">
       {/* Header */}
       <div className="relative h-48 overflow-hidden">
         <img 
-          src={marinaBg} 
+          src={backgroundImage} 
           alt="Marine Workshop" 
           className="w-full h-full object-cover"
         />
@@ -155,20 +111,20 @@ const JobView = () => {
               <div>
                 <CardTitle className="text-2xl flex items-center gap-2">
                   <Anchor className="h-6 w-6 text-maritime-medium" />
-                  {job.boatName}
+                  {job.boat_name}
                 </CardTitle>
                 <p className="text-lg text-muted-foreground">
-                  Owner: {job.customerName} • {job.boatType}
+                  Owner: {job.customer_name} • {job.boat_type}
                 </p>
               </div>
               <Badge 
                 variant={
                   job.status === "completed" ? "secondary" :
-                  job.status === "in-progress" ? "default" : "outline"
+                  job.status === "active" ? "default" : "outline"
                 }
                 className="text-sm px-3 py-1"
               >
-                {job.status.replace("-", " ").toUpperCase()}
+                {job.status.toUpperCase()}
               </Badge>
             </div>
           </CardHeader>
@@ -184,14 +140,14 @@ const JobView = () => {
               <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                 <Clock className="h-5 w-5 text-maritime-medium" />
                 <div>
-                  <div className="font-medium">{job.totalHours.toFixed(1)} Hours</div>
+                  <div className="font-medium">{job.total_hours.toFixed(1)} Hours</div>
                   <div className="text-sm text-muted-foreground">Time Logged</div>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                 <DollarSign className="h-5 w-5 text-gold" />
                 <div>
-                  <div className="font-medium">${job.hourlyRate}/hr</div>
+                  <div className="font-medium">${job.hourly_rate}/hr</div>
                   <div className="text-sm text-muted-foreground">Labor Rate</div>
                 </div>
               </div>
@@ -213,42 +169,39 @@ const JobView = () => {
 
             {/* Creation Date */}
             <div className="text-sm text-muted-foreground">
-              Job started: {formatDate(job.createdAt)}
+              Job started: {formatDate(job.created_at)}
             </div>
           </CardContent>
         </Card>
 
-        {/* Parts Used */}
-        {job.parts.length > 0 && (
+        {/* Parts Used Section */}
+        {parts && parts.length > 0 && (
           <Card className="bg-card/95 backdrop-blur-sm shadow-lg mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Parts Used ({job.parts.length})
+                <span>Parts Used</span>
+                <Badge variant="outline">{parts.length}</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {job.parts.map((part) => (
-                  <div key={part.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+              <div className="space-y-4">
+                {parts.map((part) => (
+                  <div key={part.id} className="flex justify-between items-center p-4 bg-muted rounded-lg">
                     <div>
-                      <div className="font-medium">{part.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        Quantity: {part.quantity} • Added {formatShortDate(part.timestamp)}
-                      </div>
+                      <h4 className="font-semibold">{part.name}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Quantity: {part.quantity} × ${part.cost_per_unit.toFixed(2)} each
+                      </p>
                     </div>
                     <div className="text-right">
-                      <div className="font-medium">${(part.cost * part.quantity).toFixed(2)}</div>
-                      <div className="text-sm text-muted-foreground">
-                        ${part.cost.toFixed(2)} each
-                      </div>
+                      <p className="font-bold">${(part.quantity * part.cost_per_unit).toFixed(2)}</p>
                     </div>
                   </div>
                 ))}
-                <div className="border-t pt-3 mt-3">
-                  <div className="flex justify-between items-center font-medium">
-                    <span>Total Parts Cost:</span>
-                    <span>${partsCost.toFixed(2)}</span>
+                <div className="border-t pt-4">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold">Total Parts Cost:</span>
+                    <span className="text-lg font-bold">${partsCost.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -256,39 +209,28 @@ const JobView = () => {
           </Card>
         )}
 
-        {/* Progress Notes */}
-        <Card className="bg-card/95 backdrop-blur-sm shadow-lg">
+        {/* Progress Notes Section */}
+        <Card className="bg-card/95 backdrop-blur-sm shadow-lg mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Progress Notes ({job.notes.length})
+              <span>Progress Notes</span>
+              <Badge variant="outline">{notes ? notes.length : 0}</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {job.notes.length === 0 ? (
-              <div className="text-center py-8">
-                <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">No Updates Yet</h3>
-                <p className="text-muted-foreground">
-                  Progress notes will appear here as work is completed on your boat.
-                </p>
-              </div>
-            ) : (
+            {notes && notes.length > 0 ? (
               <div className="space-y-4">
-                {job.notes.map((note, index) => (
-                  <div key={note.id} className="border-l-4 border-primary pl-4 py-2">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-primary">
-                        Update #{job.notes.length - index}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {formatShortDate(note.timestamp)}
-                      </span>
-                    </div>
-                    <p className="text-sm leading-relaxed">{note.content}</p>
+                {notes.map((note) => (
+                  <div key={note.id} className="p-4 bg-muted rounded-lg">
+                    <p className="mb-2">{note.content}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatDate(note.created_at)}
+                    </p>
                   </div>
                 ))}
               </div>
+            ) : (
+              <p className="text-muted-foreground">No progress notes available for this job.</p>
             )}
           </CardContent>
         </Card>
@@ -302,5 +244,3 @@ const JobView = () => {
     </div>
   );
 };
-
-export default JobView;

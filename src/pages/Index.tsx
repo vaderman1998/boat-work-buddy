@@ -1,104 +1,53 @@
-import { useState } from "react";
-import { JobCard, type Job, type JobNote, type JobPart } from "@/components/JobCard";
-import { AddJobDialog } from "@/components/AddJobDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Wrench, Clock, DollarSign, Anchor } from "lucide-react";
-import marinaBg from "@/assets/marina-workshop.jpg";
+import { Clock, DollarSign, Wrench, Calendar, Anchor } from "lucide-react";
+import { JobCard } from "@/components/JobCard";
+import { AddJobDialog } from "@/components/AddJobDialog";
+import { useJobs } from "@/hooks/useJobs";
+import backgroundImage from "@/assets/marina-workshop.jpg";
 
 const Index = () => {
-  const [jobs, setJobs] = useState<Job[]>([
-    {
-      id: "1",
-      customerName: "John Smith",
-      boatName: "Sea Breeze",
-      boatType: "Outboard Motor",
-      description: "Engine overheating issue, need to replace thermostat and check cooling system",
-      status: "in-progress",
-      totalHours: 2.5,
-      hourlyRate: 85,
-      notes: [
-        {
-          id: "note-1",
-          content: "Removed thermostat - found it was stuck closed. Water pump looks good.",
-          timestamp: new Date(2024, 0, 15, 10, 30),
-        },
-        {
-          id: "note-2", 
-          content: "Installed new thermostat. Testing cooling system - temperature running normal now.",
-          timestamp: new Date(2024, 0, 15, 14, 15),
-        }
-      ],
-      parts: [
-        {
-          id: "part-1",
-          name: "Thermostat",
-          cost: 45.99,
-          quantity: 1,
-          timestamp: new Date(2024, 0, 15, 14, 0),
-        },
-        {
-          id: "part-2",
-          name: "Gasket Set",
-          cost: 12.50,
-          quantity: 1,
-          timestamp: new Date(2024, 0, 15, 14, 5),
-        }
-      ],
-      createdAt: new Date(2024, 0, 15),
-    },
-    {
-      id: "2",
-      customerName: "Marina Del Rey",
-      boatName: "Ocean Explorer",
-      boatType: "Diesel Inboard",
-      description: "Fuel injector cleaning and engine tune-up required",
-      status: "pending",
-      totalHours: 0,
-      hourlyRate: 95,
-      notes: [],
-      parts: [],
-      createdAt: new Date(2024, 0, 16),
-    },
-  ]);
+  const { data: jobs = [], isLoading, error } = useJobs();
 
-  const addJob = (newJob: Omit<Job, "id" | "createdAt" | "notes" | "parts">) => {
-    const job: Job = {
-      ...newJob,
-      id: Date.now().toString(),
-      notes: [],
-      parts: [],
-      createdAt: new Date(),
-    };
-    setJobs(prev => [job, ...prev]);
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading jobs...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const updateJob = (id: string, updates: Partial<Job>) => {
-    setJobs(prev => prev.map(job => 
-      job.id === id ? { ...job, ...updates } : job
-    ));
-  };
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-destructive mb-4">Error loading jobs</p>
+          <p className="text-sm text-muted-foreground">{error.message}</p>
+        </div>
+      </div>
+    );
+  }
 
-  const deleteJob = (id: string) => {
-    setJobs(prev => prev.filter(job => job.id !== id));
-  };
-
-  const activeJobs = jobs.filter(job => job.status !== "completed");
+  const activeJobs = jobs.filter(job => job.status === "active");
   const completedJobs = jobs.filter(job => job.status === "completed");
-  const totalRevenue = jobs.reduce((sum, job) => {
-    const partsCost = job.parts.reduce((partSum, part) => partSum + (part.cost * part.quantity), 0);
-    const laborCost = job.totalHours * job.hourlyRate;
-    return sum + laborCost + partsCost;
+  
+  const totalRevenue = jobs.reduce((total, job) => {
+    const laborCost = job.total_hours * job.hourly_rate;
+    return total + laborCost;
   }, 0);
-  const totalHours = jobs.reduce((sum, job) => sum + job.totalHours, 0);
+  
+  const totalHours = jobs.reduce((total, job) => total + job.total_hours, 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-maritime-light">
       {/* Header */}
       <div className="relative h-64 overflow-hidden">
         <img 
-          src={marinaBg} 
+          src={backgroundImage} 
           alt="Marine Workshop" 
           className="w-full h-full object-cover"
         />
@@ -161,7 +110,7 @@ const Index = () => {
         {/* Main Content */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-primary">Job Management</h2>
-          <AddJobDialog onAddJob={addJob} />
+          <AddJobDialog />
         </div>
 
         <Tabs defaultValue="active" className="w-full">
@@ -194,12 +143,12 @@ const Index = () => {
                 <p className="text-muted-foreground mb-4">
                   Start by adding a new repair job to track your work.
                 </p>
-                <AddJobDialog onAddJob={addJob} />
+                <AddJobDialog />
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {activeJobs.map(job => (
-                  <JobCard key={job.id} job={job} onUpdateJob={updateJob} onDeleteJob={deleteJob} />
+                  <JobCard key={job.id} job={job} />
                 ))}
               </div>
             )}
@@ -217,7 +166,7 @@ const Index = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {completedJobs.map(job => (
-                  <JobCard key={job.id} job={job} onUpdateJob={updateJob} onDeleteJob={deleteJob} />
+                  <JobCard key={job.id} job={job} />
                 ))}
               </div>
             )}
