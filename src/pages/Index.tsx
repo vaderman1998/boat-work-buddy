@@ -1,14 +1,57 @@
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Clock, DollarSign, Wrench, Calendar, Anchor } from "lucide-react";
+import { Clock, DollarSign, Wrench, Calendar, Anchor, LogIn, LogOut } from "lucide-react";
 import { JobCard } from "@/components/JobCard";
 import { AddJobDialog } from "@/components/AddJobDialog";
 import { useJobs } from "@/hooks/useJobs";
+import { supabase } from "@/integrations/supabase/client";
+import { User, Session } from "@supabase/supabase-js";
+import { useToast } from "@/components/ui/use-toast";
 import backgroundImage from "@/assets/marina-workshop.jpg";
 
 const Index = () => {
   const { data: jobs = [], isLoading, error } = useJobs();
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Sign out failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Signed out",
+        description: "You've been signed out successfully.",
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -61,6 +104,23 @@ const Index = () => {
               <p className="text-xl opacity-90">Professional Boat Engine Service & Repair</p>
             </div>
         </div>
+        
+        {/* Auth Controls */}
+        <div className="absolute top-4 right-4">
+          {user ? (
+            <Button onClick={handleSignOut} variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          ) : (
+            <Link to="/auth">
+              <Button variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+                <LogIn className="h-4 w-4 mr-2" />
+                Admin Login
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
 
       <div className="container mx-auto px-4 py-8 -mt-20 relative z-10">
@@ -109,8 +169,10 @@ const Index = () => {
 
         {/* Main Content */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-primary">Job Management</h2>
-          <AddJobDialog />
+          <h2 className="text-2xl font-bold text-primary">
+            {user ? "Job Management" : "Current Jobs"}
+          </h2>
+          {user && <AddJobDialog />}
         </div>
 
         <Tabs defaultValue="active" className="w-full">
@@ -141,9 +203,9 @@ const Index = () => {
                 <Anchor className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-medium mb-2">No Active Jobs</h3>
                 <p className="text-muted-foreground mb-4">
-                  Start by adding a new repair job to track your work.
+                  {user ? "Start by adding a new repair job to track your work." : "No active jobs at the moment."}
                 </p>
-                <AddJobDialog />
+                {user && <AddJobDialog />}
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

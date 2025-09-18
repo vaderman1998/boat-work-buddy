@@ -12,6 +12,8 @@ import { toast } from "@/hooks/use-toast";
 import { useUpdateJob, useDeleteJob, useJobParts, useJobNotes, useAddJobPart, useAddJobNote, type Job } from "@/hooks/useJobs";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { User } from "@supabase/supabase-js";
 
 interface JobCardProps {
   job: Job;
@@ -25,6 +27,9 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const deleteJobMutation = useDeleteJob();
   const addPartMutation = useAddJobPart();
   const addNoteMutation = useAddJobNote();
+
+  // Authentication state
+  const [user, setUser] = useState<User | null>(null);
 
   // Timer state
   const [isTimerRunning, setIsTimerRunning] = useState(false);
@@ -42,6 +47,21 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   // Collapsible states
   const [isPartsOpen, setIsPartsOpen] = useState(false);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
+
+  // Check authentication state
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -201,7 +221,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
           Created: {formatDate(job.created_at)}
         </p>
 
-        {job.status === "active" && (
+        {/* Timer Controls - Only show for authenticated users */}
+        {user && job.status === "active" && (
           <div className="flex gap-2">
             {!isTimerRunning ? (
               <Button onClick={startTimer} size="sm" className="flex-1">
@@ -227,41 +248,44 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
           </div>
         )}
 
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="flex-1"
-            asChild
-          >
-            <Link to={`/invoice/${job.id}`}>
-              <Receipt className="h-4 w-4 mr-1" />
-              Invoice
-            </Link>
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="sm" className="flex-1">
-                <Trash2 className="h-4 w-4 mr-1" />
-                Delete
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the job and all associated data.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => deleteJobMutation.mutate(job.id)}>
+        {/* Admin Actions - Only show for authenticated users */}
+        {user && (
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1"
+              asChild
+            >
+              <Link to={`/invoice/${job.id}`}>
+                <Receipt className="h-4 w-4 mr-1" />
+                Invoice
+              </Link>
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm" className="flex-1">
+                  <Trash2 className="h-4 w-4 mr-1" />
                   Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the job and all associated data.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => deleteJobMutation.mutate(job.id)}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        )}
 
         {/* Parts Section */}
         <Collapsible open={isPartsOpen} onOpenChange={setIsPartsOpen}>
@@ -286,55 +310,57 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
               </div>
             ))}
             
-            {/* Add new part form */}
-            <div className="border-t pt-2 space-y-2">
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label htmlFor="partName" className="text-xs">Part Name</Label>
-                  <Input
-                    id="partName"
-                    placeholder="Part name"
-                    value={newPart.name}
-                    onChange={(e) => setNewPart({ ...newPart, name: e.target.value })}
-                    className="h-8"
-                  />
+            {/* Add new part form - Only show for authenticated users */}
+            {user && (
+              <div className="border-t pt-2 space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label htmlFor="partName" className="text-xs">Part Name</Label>
+                    <Input
+                      id="partName"
+                      placeholder="Part name"
+                      value={newPart.name}
+                      onChange={(e) => setNewPart({ ...newPart, name: e.target.value })}
+                      className="h-8"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="partQuantity" className="text-xs">Quantity</Label>
+                    <Input
+                      id="partQuantity"
+                      type="number"
+                      min="1"
+                      value={newPart.quantity}
+                      onChange={(e) => setNewPart({ ...newPart, quantity: parseInt(e.target.value) || 1 })}
+                      className="h-8"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="partQuantity" className="text-xs">Quantity</Label>
-                  <Input
-                    id="partQuantity"
-                    type="number"
-                    min="1"
-                    value={newPart.quantity}
-                    onChange={(e) => setNewPart({ ...newPart, quantity: parseInt(e.target.value) || 1 })}
-                    className="h-8"
-                  />
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <Label htmlFor="partCost" className="text-xs">Cost per Unit ($)</Label>
+                    <Input
+                      id="partCost"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={newPart.cost_per_unit}
+                      onChange={(e) => setNewPart({ ...newPart, cost_per_unit: parseFloat(e.target.value) || 0 })}
+                      className="h-8"
+                    />
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={addPart}
+                    disabled={addPartMutation.isPending}
+                    className="mt-4"
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    {addPartMutation.isPending ? "Adding..." : "Add"}
+                  </Button>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <Label htmlFor="partCost" className="text-xs">Cost per Unit ($)</Label>
-                  <Input
-                    id="partCost"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={newPart.cost_per_unit}
-                    onChange={(e) => setNewPart({ ...newPart, cost_per_unit: parseFloat(e.target.value) || 0 })}
-                    className="h-8"
-                  />
-                </div>
-                <Button
-                  size="sm"
-                  onClick={addPart}
-                  disabled={addPartMutation.isPending}
-                  className="mt-4"
-                >
-                  <Plus className="h-3 w-3 mr-1" />
-                  {addPartMutation.isPending ? "Adding..." : "Add"}
-                </Button>
-              </div>
-            </div>
+            )}
           </CollapsibleContent>
         </Collapsible>
 
@@ -359,24 +385,26 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
               </div>
             ))}
             
-            {/* Add new note form */}
-            <div className="border-t pt-2 space-y-2">
-              <Textarea
-                placeholder="Add a progress note..."
-                value={newNote}
-                onChange={(e) => setNewNote(e.target.value)}
-                className="min-h-[60px]"
-              />
-              <Button
-                size="sm"
-                onClick={addNote}
-                disabled={addNoteMutation.isPending}
-                className="w-full"
-              >
-                <Plus className="h-3 w-3 mr-1" />
-                {addNoteMutation.isPending ? "Adding..." : "Add Note"}
-              </Button>
-            </div>
+            {/* Add new note form - Only show for authenticated users */}
+            {user && (
+              <div className="border-t pt-2 space-y-2">
+                <Textarea
+                  placeholder="Add a progress note..."
+                  value={newNote}
+                  onChange={(e) => setNewNote(e.target.value)}
+                  className="min-h-[60px]"
+                />
+                <Button
+                  size="sm"
+                  onClick={addNote}
+                  disabled={addNoteMutation.isPending}
+                  className="w-full"
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  {addNoteMutation.isPending ? "Adding..." : "Add Note"}
+                </Button>
+              </div>
+            )}
           </CollapsibleContent>
         </Collapsible>
       </CardContent>
