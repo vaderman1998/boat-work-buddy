@@ -61,10 +61,7 @@ export default function Invoice() {
   // Calculate costs
   const partsCost = parts.reduce((total, part) => total + (part.quantity * part.cost_per_unit), 0);
   const laborCost = job.total_hours * job.hourly_rate;
-  const subtotal = partsCost + laborCost;
-  const taxRate = 0.0875; // 8.75% tax - adjust as needed
-  const taxAmount = subtotal * taxRate;
-  const totalAmount = subtotal + taxAmount;
+  const totalAmount = partsCost + laborCost;
 
   // Generate invoice number based on job ID and date
   const invoiceNumber = `INV-${job.id.slice(-6).toUpperCase()}-${new Date().getFullYear()}`;
@@ -99,9 +96,6 @@ export default function Invoice() {
             </div>
             <p className="text-muted-foreground">Professional Boat Engine Service & Repair</p>
             <div className="mt-4 text-sm text-muted-foreground">
-              <p>123 Marina Drive</p>
-              <p>Harbor City, FL 33101</p>
-              <p>Phone: (555) 123-4567</p>
               <p>Email: service@baengineworkx.com</p>
             </div>
           </div>
@@ -187,15 +181,6 @@ export default function Invoice() {
         <div className="flex justify-end mb-8">
           <div className="w-80">
             <div className="space-y-2">
-              <div className="flex justify-between py-2">
-                <span>Subtotal:</span>
-                <span>${subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between py-2">
-                <span>Tax ({(taxRate * 100).toFixed(2)}%):</span>
-                <span>${taxAmount.toFixed(2)}</span>
-              </div>
-              <Separator />
               <div className="flex justify-between py-2 text-lg font-bold">
                 <span>Total:</span>
                 <span>${totalAmount.toFixed(2)}</span>
@@ -232,7 +217,7 @@ export default function Invoice() {
         {/* Footer */}
         <div className="text-center mt-8 pt-6 border-t text-sm text-muted-foreground">
           <p>Thank you for choosing B & A Engine Worx for your marine engine needs!</p>
-          <p className="mt-1">For questions about this invoice, please contact us at (555) 123-4567</p>
+          <p className="mt-1">For questions about this invoice, please contact us at service@baengineworkx.com</p>
         </div>
       </div>
 
