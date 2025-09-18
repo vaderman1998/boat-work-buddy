@@ -53,13 +53,13 @@ const Index = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-r from-maritime-deep/80 to-maritime-medium/60" />
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-white">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <Anchor className="h-12 w-12 text-gold" />
-              <h1 className="text-4xl font-bold">Marina Engine Repair</h1>
+            <div className="text-center text-white">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <Anchor className="h-12 w-12 text-gold" />
+                <h1 className="text-4xl font-bold">B & A Engine Worx</h1>
+              </div>
+              <p className="text-xl opacity-90">Professional Boat Engine Service & Repair</p>
             </div>
-            <p className="text-xl opacity-90">Professional Boat Engine Service & Repair</p>
-          </div>
         </div>
       </div>
 

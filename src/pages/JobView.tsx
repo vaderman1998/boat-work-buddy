@@ -86,7 +86,7 @@ export default function JobView() {
           <div className="text-center text-white">
             <div className="flex items-center justify-center gap-3 mb-2">
               <Anchor className="h-8 w-8 text-gold" />
-              <h1 className="text-2xl font-bold">Marina Engine Repair</h1>
+              <h1 className="text-2xl font-bold">B & A Engine Worx</h1>
             </div>
             <p className="text-lg opacity-90">Job Status Update</p>
           </div>
@@ -238,7 +238,7 @@ export default function JobView() {
         {/* Footer */}
         <div className="text-center mt-8 p-4 text-sm text-muted-foreground">
           <p>This page updates automatically as work progresses on your boat.</p>
-          <p className="mt-1">For questions, please contact Marina Engine Repair directly.</p>
+          <p className="mt-1">For questions, please contact B & A Engine Worx directly.</p>
         </div>
       </div>
     </div>
