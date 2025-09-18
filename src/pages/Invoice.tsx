@@ -96,7 +96,7 @@ export default function Invoice() {
             </div>
             <p className="text-muted-foreground">Professional Boat Engine Service & Repair</p>
             <div className="mt-4 text-sm text-muted-foreground">
-              <p>Email: service@baengineworkx.com</p>
+              <p>Email: sahall32@bellsouth.net</p>
             </div>
           </div>
           <div className="text-right">
@@ -203,21 +203,10 @@ export default function Invoice() {
           </div>
         )}
 
-        {/* Payment Terms */}
-        <div className="border-t pt-6">
-          <h3 className="text-lg font-semibold mb-2">Payment Terms:</h3>
-          <div className="text-sm text-muted-foreground space-y-1">
-            <p>• Payment is due within 30 days of invoice date</p>
-            <p>• We accept cash, check, or major credit cards</p>
-            <p>• A 1.5% monthly service charge may be applied to past due accounts</p>
-            <p>• All work is guaranteed for 90 days from completion date</p>
-          </div>
-        </div>
-
         {/* Footer */}
         <div className="text-center mt-8 pt-6 border-t text-sm text-muted-foreground">
           <p>Thank you for choosing B & A Engine Worx for your marine engine needs!</p>
-          <p className="mt-1">For questions about this invoice, please contact us at service@baengineworkx.com</p>
+          <p className="mt-1">For questions about this invoice, please contact us at sahall32@bellsouth.net</p>
         </div>
       </div>
 
