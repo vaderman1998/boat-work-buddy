@@ -8,7 +8,7 @@ import { Plus } from "lucide-react";
 import type { Job } from "./JobCard";
 
 interface AddJobDialogProps {
-  onAddJob: (job: Omit<Job, "id" | "createdAt">) => void;
+  onAddJob: (job: Omit<Job, "id" | "createdAt" | "notes">) => void;
 }
 
 export const AddJobDialog = ({ onAddJob }: AddJobDialogProps) => {

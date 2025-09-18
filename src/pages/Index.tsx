@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { JobCard, type Job } from "@/components/JobCard";
+import { JobCard, type Job, type JobNote } from "@/components/JobCard";
 import { AddJobDialog } from "@/components/AddJobDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,18 @@ const Index = () => {
       status: "in-progress",
       totalHours: 2.5,
       hourlyRate: 85,
+      notes: [
+        {
+          id: "note-1",
+          content: "Removed thermostat - found it was stuck closed. Water pump looks good.",
+          timestamp: new Date(2024, 0, 15, 10, 30),
+        },
+        {
+          id: "note-2", 
+          content: "Installed new thermostat. Testing cooling system - temperature running normal now.",
+          timestamp: new Date(2024, 0, 15, 14, 15),
+        }
+      ],
       createdAt: new Date(2024, 0, 15),
     },
     {
@@ -29,14 +41,16 @@ const Index = () => {
       status: "pending",
       totalHours: 0,
       hourlyRate: 95,
+      notes: [],
       createdAt: new Date(2024, 0, 16),
     },
   ]);
 
-  const addJob = (newJob: Omit<Job, "id" | "createdAt">) => {
+  const addJob = (newJob: Omit<Job, "id" | "createdAt" | "notes">) => {
     const job: Job = {
       ...newJob,
       id: Date.now().toString(),
+      notes: [],
       createdAt: new Date(),
     };
     setJobs(prev => [job, ...prev]);

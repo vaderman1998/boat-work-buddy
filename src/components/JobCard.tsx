@@ -2,9 +2,17 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Play, Pause, Square, Clock, Anchor, Trash2 } from "lucide-react";
+import { Play, Pause, Square, Clock, Anchor, Trash2, FileText, ChevronDown, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+export interface JobNote {
+  id: string;
+  content: string;
+  timestamp: Date;
+}
 
 export interface Job {
   id: string;
@@ -15,6 +23,7 @@ export interface Job {
   status: "pending" | "in-progress" | "completed";
   totalHours: number;
   hourlyRate: number;
+  notes: JobNote[];
   createdAt: Date;
 }
 
@@ -28,6 +37,8 @@ export const JobCard = ({ job, onUpdateJob, onDeleteJob }: JobCardProps) => {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [currentSession, setCurrentSession] = useState(0);
   const [sessionStart, setSessionStart] = useState<Date | null>(null);
+  const [newNote, setNewNote] = useState("");
+  const [notesOpen, setNotesOpen] = useState(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -75,6 +86,29 @@ export const JobCard = ({ job, onUpdateJob, onDeleteJob }: JobCardProps) => {
     setIsTimerRunning(false);
     setCurrentSession(0);
     setSessionStart(null);
+  };
+
+  const addNote = () => {
+    if (newNote.trim()) {
+      const note: JobNote = {
+        id: Date.now().toString(),
+        content: newNote.trim(),
+        timestamp: new Date(),
+      };
+      onUpdateJob(job.id, { 
+        notes: [...job.notes, note] 
+      });
+      setNewNote("");
+    }
+  };
+
+  const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
   };
 
   const totalCost = (job.totalHours + (currentSession / 3600)) * job.hourlyRate;
@@ -175,6 +209,53 @@ export const JobCard = ({ job, onUpdateJob, onDeleteJob }: JobCardProps) => {
             </Button>
           </div>
         )}
+
+        {/* Notes Section */}
+        <Collapsible open={notesOpen} onOpenChange={setNotesOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" className="w-full justify-between p-2">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                <span>Notes ({job.notes.length})</span>
+              </div>
+              <ChevronDown className={cn("h-4 w-4 transition-transform", notesOpen && "rotate-180")} />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-3 pt-2">
+            {/* Add Note */}
+            <div className="space-y-2">
+              <Textarea
+                placeholder="Add a note about this job..."
+                value={newNote}
+                onChange={(e) => setNewNote(e.target.value)}
+                className="min-h-[60px] resize-none"
+              />
+              <Button 
+                onClick={addNote} 
+                size="sm" 
+                disabled={!newNote.trim()}
+                className="w-full"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Add Note
+              </Button>
+            </div>
+
+            {/* Existing Notes */}
+            {job.notes.length > 0 && (
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {job.notes.map((note) => (
+                  <div key={note.id} className="p-2 bg-muted rounded-md text-sm">
+                    <div className="text-xs text-muted-foreground mb-1">
+                      {formatDate(note.timestamp)}
+                    </div>
+                    <div>{note.content}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
       </CardContent>
     </Card>
   );
