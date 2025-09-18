@@ -7,10 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Clock, Play, Pause, CheckCircle, Trash2, ChevronDown, ChevronRight, Plus, Package, FileText, Copy, Anchor, Share2 } from "lucide-react";
+import { Clock, Play, Pause, CheckCircle, Trash2, ChevronDown, ChevronRight, Plus, Package, FileText, Copy, Anchor, Share2, Receipt } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useUpdateJob, useDeleteJob, useJobParts, useJobNotes, useAddJobPart, useAddJobNote, type Job } from "@/hooks/useJobs";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
 interface JobCardProps {
   job: Job;
@@ -159,6 +160,17 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
             >
               <Share2 className="h-4 w-4" />
             </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+              title="Generate invoice"
+              asChild
+            >
+              <Link to={`/invoice/${job.id}`}>
+                <Receipt className="h-4 w-4" />
+              </Link>
+            </Button>
           </div>
         </div>
       </CardHeader>
@@ -216,6 +228,17 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
         )}
 
         <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex-1"
+            asChild
+          >
+            <Link to={`/invoice/${job.id}`}>
+              <Receipt className="h-4 w-4 mr-1" />
+              Invoice
+            </Link>
+          </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" size="sm" className="flex-1">
