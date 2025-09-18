@@ -58,7 +58,7 @@ const Index = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading jobs...</p>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -70,6 +70,39 @@ const Index = () => {
         <div className="text-center">
           <p className="text-destructive mb-4">Error loading jobs</p>
           <p className="text-sm text-muted-foreground">{error.message}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If user is not authenticated, show login page
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Anchor className="h-12 w-12 text-gold" />
+              <h1 className="text-3xl font-bold text-white">B & A Engine Worx</h1>
+            </div>
+            <p className="text-slate-300">Professional Boat Engine Service & Repair</p>
+            <p className="text-slate-400 mt-2">Admin Portal</p>
+          </div>
+
+          <Card>
+            <CardContent className="p-6 text-center">
+              <h2 className="text-xl font-semibold mb-4">Authentication Required</h2>
+              <p className="text-muted-foreground mb-6">
+                Please sign in to access the job management system.
+              </p>
+              <Link to="/auth">
+                <Button className="w-full">
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Go to Login
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -169,10 +202,8 @@ const Index = () => {
 
         {/* Main Content */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-primary">
-            {user ? "Job Management" : "Current Jobs"}
-          </h2>
-          {user && <AddJobDialog />}
+          <h2 className="text-2xl font-bold text-primary">Job Management</h2>
+          <AddJobDialog />
         </div>
 
         <Tabs defaultValue="active" className="w-full">
@@ -203,9 +234,9 @@ const Index = () => {
                 <Anchor className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-medium mb-2">No Active Jobs</h3>
                 <p className="text-muted-foreground mb-4">
-                  {user ? "Start by adding a new repair job to track your work." : "No active jobs at the moment."}
+                  Start by adding a new repair job to track your work.
                 </p>
-                {user && <AddJobDialog />}
+                <AddJobDialog />
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
