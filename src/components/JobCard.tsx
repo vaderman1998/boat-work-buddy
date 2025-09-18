@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Play, Pause, Square, Clock, Anchor, Trash2, FileText, ChevronDown, Plus } from "lucide-react";
+import { Play, Pause, Square, Clock, Anchor, Trash2, FileText, ChevronDown, Plus, Share2, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 export interface JobNote {
   id: string;
@@ -39,6 +40,7 @@ export const JobCard = ({ job, onUpdateJob, onDeleteJob }: JobCardProps) => {
   const [sessionStart, setSessionStart] = useState<Date | null>(null);
   const [newNote, setNewNote] = useState("");
   const [notesOpen, setNotesOpen] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -111,6 +113,16 @@ export const JobCard = ({ job, onUpdateJob, onDeleteJob }: JobCardProps) => {
     }).format(date);
   };
 
+  const copyJobLink = () => {
+    const jobUrl = `${window.location.origin}/job/${job.id}`;
+    navigator.clipboard.writeText(jobUrl).then(() => {
+      toast({
+        title: "Link copied!",
+        description: "Customer job link has been copied to clipboard.",
+      });
+    });
+  };
+
   const totalCost = (job.totalHours + (currentSession / 3600)) * job.hourlyRate;
 
   return (
@@ -132,6 +144,15 @@ export const JobCard = ({ job, onUpdateJob, onDeleteJob }: JobCardProps) => {
             }>
               {job.status.replace("-", " ")}
             </Badge>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+              onClick={copyJobLink}
+              title="Copy customer link"
+            >
+              <Share2 className="h-4 w-4" />
+            </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button 
