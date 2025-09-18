@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Pause, Square, Clock, Anchor } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Play, Pause, Square, Clock, Anchor, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface Job {
@@ -20,9 +21,10 @@ export interface Job {
 interface JobCardProps {
   job: Job;
   onUpdateJob: (id: string, updates: Partial<Job>) => void;
+  onDeleteJob: (id: string) => void;
 }
 
-export const JobCard = ({ job, onUpdateJob }: JobCardProps) => {
+export const JobCard = ({ job, onUpdateJob, onDeleteJob }: JobCardProps) => {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [currentSession, setCurrentSession] = useState(0);
   const [sessionStart, setSessionStart] = useState<Date | null>(null);
@@ -89,12 +91,43 @@ export const JobCard = ({ job, onUpdateJob }: JobCardProps) => {
             <Anchor className="h-5 w-5 text-maritime-medium" />
             <CardTitle className="text-lg">{job.boatName}</CardTitle>
           </div>
-          <Badge variant={
-            job.status === "completed" ? "secondary" :
-            job.status === "in-progress" ? "default" : "outline"
-          }>
-            {job.status.replace("-", " ")}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant={
+              job.status === "completed" ? "secondary" :
+              job.status === "in-progress" ? "default" : "outline"
+            }>
+              {job.status.replace("-", " ")}
+            </Badge>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Job</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete the job for "{job.boatName}"? 
+                    This action cannot be undone and will remove all tracked time and data.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={() => onDeleteJob(job.id)}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete Job
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
         <div className="text-sm text-muted-foreground">
           {job.customerName} • {job.boatType}

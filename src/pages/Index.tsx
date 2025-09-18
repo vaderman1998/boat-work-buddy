@@ -48,6 +48,10 @@ const Index = () => {
     ));
   };
 
+  const deleteJob = (id: string) => {
+    setJobs(prev => prev.filter(job => job.id !== id));
+  };
+
   const activeJobs = jobs.filter(job => job.status !== "completed");
   const completedJobs = jobs.filter(job => job.status === "completed");
   const totalRevenue = jobs.reduce((sum, job) => sum + (job.totalHours * job.hourlyRate), 0);
@@ -159,7 +163,7 @@ const Index = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {activeJobs.map(job => (
-                  <JobCard key={job.id} job={job} onUpdateJob={updateJob} />
+                  <JobCard key={job.id} job={job} onUpdateJob={updateJob} onDeleteJob={deleteJob} />
                 ))}
               </div>
             )}
@@ -177,7 +181,7 @@ const Index = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {completedJobs.map(job => (
-                  <JobCard key={job.id} job={job} onUpdateJob={updateJob} />
+                  <JobCard key={job.id} job={job} onUpdateJob={updateJob} onDeleteJob={deleteJob} />
                 ))}
               </div>
             )}
