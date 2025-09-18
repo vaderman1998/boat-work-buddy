@@ -47,6 +47,12 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        maritime: {
+          deep: "hsl(var(--maritime-deep))",
+          medium: "hsl(var(--maritime-medium))",
+          light: "hsl(var(--maritime-light))",
+        },
+        gold: "hsl(var(--gold-accent))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
