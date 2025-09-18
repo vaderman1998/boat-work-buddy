@@ -88,7 +88,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const pauseTimer = () => {
     if (sessionStart) {
       const sessionTime = (new Date().getTime() - sessionStart.getTime()) / (1000 * 60 * 60); // Convert to hours
-      const newTotalHours = job.total_hours + currentSession + sessionTime;
+      const currentSessionHours = currentSession / 3600; // Convert current session from seconds to hours
+      const newTotalHours = job.total_hours + currentSessionHours + sessionTime;
       updateJobMutation.mutate({ id: job.id, updates: { total_hours: newTotalHours } });
     }
     setIsTimerRunning(false);
@@ -201,7 +202,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <span className="font-medium">Time Logged:</span>
-            <p>{formatTime(job.total_hours + currentSession)}</p>
+            <p>{formatTime((job.total_hours * 3600) + currentSession)}</p>
           </div>
           <div>
             <span className="font-medium">Labor Rate:</span>
