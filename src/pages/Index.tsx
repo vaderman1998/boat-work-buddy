@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { JobCard, type Job, type JobNote } from "@/components/JobCard";
+import { JobCard, type Job, type JobNote, type JobPart } from "@/components/JobCard";
 import { AddJobDialog } from "@/components/AddJobDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,22 @@ const Index = () => {
           timestamp: new Date(2024, 0, 15, 14, 15),
         }
       ],
+      parts: [
+        {
+          id: "part-1",
+          name: "Thermostat",
+          cost: 45.99,
+          quantity: 1,
+          timestamp: new Date(2024, 0, 15, 14, 0),
+        },
+        {
+          id: "part-2",
+          name: "Gasket Set",
+          cost: 12.50,
+          quantity: 1,
+          timestamp: new Date(2024, 0, 15, 14, 5),
+        }
+      ],
       createdAt: new Date(2024, 0, 15),
     },
     {
@@ -42,15 +58,17 @@ const Index = () => {
       totalHours: 0,
       hourlyRate: 95,
       notes: [],
+      parts: [],
       createdAt: new Date(2024, 0, 16),
     },
   ]);
 
-  const addJob = (newJob: Omit<Job, "id" | "createdAt" | "notes">) => {
+  const addJob = (newJob: Omit<Job, "id" | "createdAt" | "notes" | "parts">) => {
     const job: Job = {
       ...newJob,
       id: Date.now().toString(),
       notes: [],
+      parts: [],
       createdAt: new Date(),
     };
     setJobs(prev => [job, ...prev]);
@@ -68,7 +86,11 @@ const Index = () => {
 
   const activeJobs = jobs.filter(job => job.status !== "completed");
   const completedJobs = jobs.filter(job => job.status === "completed");
-  const totalRevenue = jobs.reduce((sum, job) => sum + (job.totalHours * job.hourlyRate), 0);
+  const totalRevenue = jobs.reduce((sum, job) => {
+    const partsCost = job.parts.reduce((partSum, part) => partSum + (part.cost * part.quantity), 0);
+    const laborCost = job.totalHours * job.hourlyRate;
+    return sum + laborCost + partsCost;
+  }, 0);
   const totalHours = jobs.reduce((sum, job) => sum + job.totalHours, 0);
 
   return (

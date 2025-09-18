@@ -36,6 +36,22 @@ const JobView = () => {
             timestamp: new Date(2024, 0, 15, 14, 15),
           }
         ],
+        parts: [
+          {
+            id: "part-1",
+            name: "Thermostat",
+            cost: 45.99,
+            quantity: 1,
+            timestamp: new Date(2024, 0, 15, 14, 0),
+          },
+          {
+            id: "part-2",
+            name: "Gasket Set",
+            cost: 12.50,
+            quantity: 1,
+            timestamp: new Date(2024, 0, 15, 14, 5),
+          }
+        ],
         createdAt: new Date(2024, 0, 15),
       },
       {
@@ -48,6 +64,7 @@ const JobView = () => {
         totalHours: 0,
         hourlyRate: 95,
         notes: [],
+        parts: [],
         createdAt: new Date(2024, 0, 16),
       },
     ];
@@ -95,7 +112,9 @@ const JobView = () => {
     );
   }
 
-  const totalCost = job.totalHours * job.hourlyRate;
+  const totalCost = job.totalHours * job.hourlyRate + job.parts.reduce((sum, part) => sum + (part.cost * part.quantity), 0);
+  const partsCost = job.parts.reduce((sum, part) => sum + (part.cost * part.quantity), 0);
+  const laborCost = job.totalHours * job.hourlyRate;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-maritime-light">
@@ -161,7 +180,7 @@ const JobView = () => {
             </div>
 
             {/* Job Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                 <Clock className="h-5 w-5 text-maritime-medium" />
                 <div>
@@ -174,6 +193,13 @@ const JobView = () => {
                 <div>
                   <div className="font-medium">${job.hourlyRate}/hr</div>
                   <div className="text-sm text-muted-foreground">Labor Rate</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                <DollarSign className="h-5 w-5 text-maritime-medium" />
+                <div>
+                  <div className="font-medium">${partsCost.toFixed(2)}</div>
+                  <div className="text-sm text-muted-foreground">Parts Cost</div>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
@@ -191,6 +217,44 @@ const JobView = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Parts Used */}
+        {job.parts.length > 0 && (
+          <Card className="bg-card/95 backdrop-blur-sm shadow-lg mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Parts Used ({job.parts.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {job.parts.map((part) => (
+                  <div key={part.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                    <div>
+                      <div className="font-medium">{part.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        Quantity: {part.quantity} • Added {formatShortDate(part.timestamp)}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium">${(part.cost * part.quantity).toFixed(2)}</div>
+                      <div className="text-sm text-muted-foreground">
+                        ${part.cost.toFixed(2)} each
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <div className="border-t pt-3 mt-3">
+                  <div className="flex justify-between items-center font-medium">
+                    <span>Total Parts Cost:</span>
+                    <span>${partsCost.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Progress Notes */}
         <Card className="bg-card/95 backdrop-blur-sm shadow-lg">

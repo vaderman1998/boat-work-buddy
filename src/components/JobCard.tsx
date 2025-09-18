@@ -2,16 +2,26 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Play, Pause, Square, Clock, Anchor, Trash2, FileText, ChevronDown, Plus, Share2, Copy } from "lucide-react";
+import { Play, Pause, Square, Clock, Anchor, Trash2, FileText, ChevronDown, Plus, Share2, Copy, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
 export interface JobNote {
   id: string;
   content: string;
+  timestamp: Date;
+}
+
+export interface JobPart {
+  id: string;
+  name: string;
+  cost: number;
+  quantity: number;
   timestamp: Date;
 }
 
@@ -25,6 +35,7 @@ export interface Job {
   totalHours: number;
   hourlyRate: number;
   notes: JobNote[];
+  parts: JobPart[];
   createdAt: Date;
 }
 
@@ -40,6 +51,8 @@ export const JobCard = ({ job, onUpdateJob, onDeleteJob }: JobCardProps) => {
   const [sessionStart, setSessionStart] = useState<Date | null>(null);
   const [newNote, setNewNote] = useState("");
   const [notesOpen, setNotesOpen] = useState(false);
+  const [partsOpen, setPartsOpen] = useState(false);
+  const [newPart, setNewPart] = useState({ name: "", cost: 0, quantity: 1 });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -104,6 +117,22 @@ export const JobCard = ({ job, onUpdateJob, onDeleteJob }: JobCardProps) => {
     }
   };
 
+  const addPart = () => {
+    if (newPart.name.trim() && newPart.cost > 0 && newPart.quantity > 0) {
+      const part: JobPart = {
+        id: Date.now().toString(),
+        name: newPart.name.trim(),
+        cost: newPart.cost,
+        quantity: newPart.quantity,
+        timestamp: new Date(),
+      };
+      onUpdateJob(job.id, { 
+        parts: [...job.parts, part] 
+      });
+      setNewPart({ name: "", cost: 0, quantity: 1 });
+    }
+  };
+
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
@@ -123,7 +152,9 @@ export const JobCard = ({ job, onUpdateJob, onDeleteJob }: JobCardProps) => {
     });
   };
 
-  const totalCost = (job.totalHours + (currentSession / 3600)) * job.hourlyRate;
+  const partsCost = job.parts.reduce((sum, part) => sum + (part.cost * part.quantity), 0);
+  const laborCost = (job.totalHours + (currentSession / 3600)) * job.hourlyRate;
+  const totalCost = laborCost + partsCost;
 
   return (
     <Card className={cn(
@@ -195,13 +226,20 @@ export const JobCard = ({ job, onUpdateJob, onDeleteJob }: JobCardProps) => {
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-1">
             <Clock className="h-4 w-4" />
-            <span>Total: {job.totalHours.toFixed(2)}h</span>
+            <span>Labor: {job.totalHours.toFixed(2)}h</span>
             {currentSession > 0 && (
               <span className="text-primary">+ {formatTime(currentSession)}</span>
             )}
           </div>
-          <div className="font-medium">
-            ${totalCost.toFixed(2)}
+          <div className="flex flex-col items-end">
+            <div className="font-medium">
+              Total: ${totalCost.toFixed(2)}
+            </div>
+            {partsCost > 0 && (
+              <div className="text-xs text-muted-foreground">
+                Labor: ${laborCost.toFixed(2)} + Parts: ${partsCost.toFixed(2)}
+              </div>
+            )}
           </div>
         </div>
 
@@ -230,6 +268,100 @@ export const JobCard = ({ job, onUpdateJob, onDeleteJob }: JobCardProps) => {
             </Button>
           </div>
         )}
+
+        {/* Parts Section */}
+        <Collapsible open={partsOpen} onOpenChange={setPartsOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" className="w-full justify-between p-2">
+              <div className="flex items-center gap-2">
+                <Wrench className="h-4 w-4" />
+                <span>Parts ({job.parts.length})</span>
+                {partsCost > 0 && (
+                  <span className="text-xs bg-muted px-2 py-1 rounded">
+                    ${partsCost.toFixed(2)}
+                  </span>
+                )}
+              </div>
+              <ChevronDown className={cn("h-4 w-4 transition-transform", partsOpen && "rotate-180")} />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-3 pt-2">
+            {/* Add Part */}
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label htmlFor="partName" className="text-xs">Part Name</Label>
+                  <Input
+                    id="partName"
+                    placeholder="e.g., Thermostat"
+                    value={newPart.name}
+                    onChange={(e) => setNewPart(prev => ({ ...prev, name: e.target.value }))}
+                    className="h-8"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="partCost" className="text-xs">Cost ($)</Label>
+                  <Input
+                    id="partCost"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    value={newPart.cost || ""}
+                    onChange={(e) => setNewPart(prev => ({ ...prev, cost: parseFloat(e.target.value) || 0 }))}
+                    className="h-8"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label htmlFor="partQuantity" className="text-xs">Quantity</Label>
+                  <Input
+                    id="partQuantity"
+                    type="number"
+                    min="1"
+                    value={newPart.quantity}
+                    onChange={(e) => setNewPart(prev => ({ ...prev, quantity: parseInt(e.target.value) || 1 }))}
+                    className="h-8"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <Button 
+                    onClick={addPart} 
+                    size="sm" 
+                    disabled={!newPart.name.trim() || newPart.cost <= 0}
+                    className="w-full h-8"
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    Add Part
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Existing Parts */}
+            {job.parts.length > 0 && (
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {job.parts.map((part) => (
+                  <div key={part.id} className="p-2 bg-muted rounded-md text-sm">
+                    <div className="flex justify-between items-start mb-1">
+                      <div className="font-medium">{part.name}</div>
+                      <div className="text-right">
+                        <div className="font-medium">${(part.cost * part.quantity).toFixed(2)}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {part.quantity}x ${part.cost.toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {formatDate(part.timestamp)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
 
         {/* Notes Section */}
         <Collapsible open={notesOpen} onOpenChange={setNotesOpen}>
