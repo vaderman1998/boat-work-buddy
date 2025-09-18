@@ -146,11 +146,11 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   };
 
   const copyJobLink = () => {
-    const jobUrl = `${window.location.origin}/job/${job.id}`;
+    const jobUrl = `${window.location.origin}/job/${job.customer_token}`;
     navigator.clipboard.writeText(jobUrl).then(() => {
       toast({
-        title: "Link copied!",
-        description: "Job link has been copied to clipboard.",
+        title: "Customer link copied!",
+        description: "Secure customer viewing link has been copied to clipboard.",
       });
     });
   };
@@ -176,7 +176,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
               size="sm" 
               className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
               onClick={copyJobLink}
-              title="Copy customer link"
+              title="Copy secure customer link"
             >
               <Share2 className="h-4 w-4" />
             </Button>

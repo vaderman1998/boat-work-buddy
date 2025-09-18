@@ -13,6 +13,7 @@ export interface Job {
   total_hours: number;
   created_at: string;
   updated_at: string;
+  customer_token: string;
 }
 
 export interface JobPart {
@@ -82,7 +83,7 @@ export const useCreateJob = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (newJob: Omit<Job, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (newJob: Omit<Job, 'id' | 'created_at' | 'updated_at' | 'customer_token'>) => {
       const { data, error } = await supabase
         .from('jobs')
         .insert([newJob])
@@ -217,5 +218,22 @@ export const useAddJobNote = () => {
         variant: "destructive",
       });
     },
+  });
+};
+
+export const useJobByToken = (token: string) => {
+  return useQuery({
+    queryKey: ['job-by-token', token],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('jobs')
+        .select('*')
+        .eq('customer_token', token)
+        .single();
+      
+      if (error) throw error;
+      return data as Job;
+    },
+    enabled: !!token,
   });
 };

@@ -3,17 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Anchor, Clock, DollarSign, FileText } from "lucide-react";
-import { useJobs, useJobParts, useJobNotes } from "@/hooks/useJobs";
+import { useJobByToken, useJobParts, useJobNotes } from "@/hooks/useJobs";
 import backgroundImage from "@/assets/marina-workshop.jpg";
 
 export default function JobView() {
   const { jobId } = useParams<{ jobId: string }>();
-  const { data: jobs = [], isLoading: jobsLoading } = useJobs();
-  const { data: parts = [], isLoading: partsLoading } = useJobParts(jobId || '');
-  const { data: notes = [], isLoading: notesLoading } = useJobNotes(jobId || '');
+  const { data: job, isLoading: jobLoading, error: jobError } = useJobByToken(jobId || '');
+  const { data: parts = [], isLoading: partsLoading } = useJobParts(job?.id || '');
+  const { data: notes = [], isLoading: notesLoading } = useJobNotes(job?.id || '');
   
-  const job = jobs.find(j => j.id === jobId);
-  const isLoading = jobsLoading || partsLoading || notesLoading;
+  const isLoading = jobLoading || partsLoading || notesLoading;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -47,7 +46,27 @@ export default function JobView() {
     );
   }
 
-  if (!job) {
+  if (!job && !isLoading) {
+    if (jobError) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-background to-maritime-light flex items-center justify-center">
+          <Card className="p-8 text-center max-w-md">
+            <Anchor className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+            <p className="text-muted-foreground mb-4">
+              This job link is invalid or has expired. Please contact B & A Engine Worx for a valid job link.
+            </p>
+            <Button asChild>
+              <Link to="/">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Home
+              </Link>
+            </Button>
+          </Card>
+        </div>
+      );
+    }
+    
     return (
       <div className="min-h-screen bg-gradient-to-br from-background to-maritime-light flex items-center justify-center">
         <Card className="p-8 text-center max-w-md">
