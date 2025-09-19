@@ -36,22 +36,18 @@ export const TimeSessionCard = ({ session, isAuthenticated }: TimeSessionCardPro
         const start = new Date(session.start_time!).getTime();
         const now = Date.now();
         const elapsed = (now - start) / 1000; // seconds
-        setCurrentTime(elapsed);
+        // Add any previously accumulated duration
+        setCurrentTime(session.duration + elapsed);
       }, 1000) as unknown as number;
-    } else if (session.start_time && session.end_time) {
-      // Completed session - show total duration
-      const start = new Date(session.start_time).getTime();
-      const end = new Date(session.end_time).getTime();
-      const duration = (end - start) / 1000; // seconds
-      setCurrentTime(duration);
     } else {
-      setCurrentTime(0);
+      // Show accumulated duration (either paused or completed)
+      setCurrentTime(session.duration);
     }
 
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isRunning, session.start_time, session.end_time]);
+  }, [isRunning, session.start_time, session.end_time, session.duration]);
 
   const formatTime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);

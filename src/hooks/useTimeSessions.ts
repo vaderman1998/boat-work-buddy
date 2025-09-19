@@ -80,16 +80,35 @@ export const useStartTimer = () => {
   });
 };
 
-// Hook to stop a timer (update end_time)
+// Hook to stop a timer (update end_time and accumulate duration)
 export const useStopTimer = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (sessionId: string) => {
+      // First get the current session to calculate accumulated time
+      const { data: session, error: fetchError } = await supabase
+        .from('job_time_sessions')
+        .select('*')
+        .eq('id', sessionId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Calculate the duration for this session
+      let newDuration = session.duration || 0;
+      if (session.start_time) {
+        const startTime = new Date(session.start_time).getTime();
+        const endTime = Date.now();
+        const sessionDuration = (endTime - startTime) / 1000; // seconds
+        newDuration = (session.duration || 0) + sessionDuration;
+      }
+
       const { data, error } = await supabase
         .from('job_time_sessions')
         .update({
           end_time: new Date().toISOString(),
+          duration: newDuration,
         })
         .eq('id', sessionId)
         .select()
