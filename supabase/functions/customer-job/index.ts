@@ -55,8 +55,15 @@ serve(async (req) => {
       .eq('job_id', job.id)
       .order('created_at', { ascending: false })
 
+    // Get job time sessions
+    const { data: timeSessions = [] } = await supabase
+      .from('job_time_sessions')
+      .select('*')
+      .eq('job_id', job.id)
+      .order('created_at', { ascending: false })
+
     return new Response(
-      JSON.stringify({ job, parts, notes }),
+      JSON.stringify({ job, parts, notes, timeSessions }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 

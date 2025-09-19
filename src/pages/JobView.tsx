@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Anchor, Clock, DollarSign, FileText } from "lucide-react";
+import { ArrowLeft, Anchor, Clock, DollarSign, FileText, Play, Pause } from "lucide-react";
 import { useJobByToken, useJobParts, useJobNotes } from "@/hooks/useJobs";
 import backgroundImage from "@/assets/marina-workshop.jpg";
 
@@ -13,6 +13,7 @@ export default function JobView() {
   const job = customerData?.job;
   const parts = customerData?.parts || [];
   const notes = customerData?.notes || [];
+  const timeSessions = customerData?.timeSessions || [];
   
   const isLoading = jobLoading;
 
@@ -28,13 +29,15 @@ export default function JobView() {
     });
   };
 
-  const formatShortDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
+  const formatTime = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${minutes}:${secs.toString().padStart(2, '0')}`;
   };
 
   if (isLoading) {
@@ -184,6 +187,66 @@ export default function JobView() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Time Sessions Section */}
+        {timeSessions && timeSessions.length > 0 && (
+          <Card className="bg-card/95 backdrop-blur-sm shadow-lg mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-maritime-medium" />
+                <span>Time Sessions</span>
+                <Badge variant="outline">{timeSessions.length}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {timeSessions.map((session) => {
+                  const isRunning = session.start_time && !session.end_time;
+                  const duration = session.start_time && session.end_time 
+                    ? (new Date(session.end_time).getTime() - new Date(session.start_time).getTime()) / 1000
+                    : 0;
+                  
+                  return (
+                    <div key={session.id} className="p-4 bg-muted rounded-lg">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-semibold">{session.description}</h4>
+                        {isRunning ? (
+                          <Badge className="bg-green-500 text-white flex items-center gap-1">
+                            <Play className="h-3 w-3" />
+                            Running
+                          </Badge>
+                        ) : session.start_time && session.end_time ? (
+                          <Badge variant="secondary">Completed</Badge>
+                        ) : (
+                          <Badge variant="outline">Not Started</Badge>
+                        )}
+                      </div>
+                      
+                      {session.start_time && session.end_time && (
+                        <div className="text-sm text-muted-foreground mb-2">
+                          <p>Started: {formatDate(session.start_time)}</p>
+                          <p>Completed: {formatDate(session.end_time)}</p>
+                          <p className="font-medium text-foreground">Duration: {formatTime(duration)}</p>
+                        </div>
+                      )}
+                      
+                      {isRunning && session.start_time && (
+                        <div className="text-sm text-muted-foreground">
+                          <p>Started: {formatDate(session.start_time)}</p>
+                          <p className="font-medium text-green-600">⏱️ Timer currently running...</p>
+                        </div>
+                      )}
+                      
+                      {!session.start_time && (
+                        <p className="text-sm text-muted-foreground">Timer not yet started</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Parts Used Section */}
         {parts && parts.length > 0 && (

@@ -10,6 +10,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Clock, Play, Pause, CheckCircle, Trash2, ChevronDown, ChevronRight, Plus, Package, FileText, Copy, Anchor, Share2, Receipt } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useUpdateJob, useDeleteJob, useJobParts, useJobNotes, useAddJobPart, useAddJobNote, type Job } from "@/hooks/useJobs";
+import { useTimeSessions, useCreateTimeSession } from "@/hooks/useTimeSessions";
+import { TimeSessionCard } from "@/components/TimeSessionCard";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,21 +25,19 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   // Queries and mutations
   const { data: parts = [] } = useJobParts(job.id);
   const { data: notes = [] } = useJobNotes(job.id);
+  const { data: timeSessions = [] } = useTimeSessions(job.id);
   const updateJobMutation = useUpdateJob();
   const deleteJobMutation = useDeleteJob();
   const addPartMutation = useAddJobPart();
   const addNoteMutation = useAddJobNote();
+  const createTimeSessionMutation = useCreateTimeSession();
 
   // Authentication state
   const [user, setUser] = useState<User | null>(null);
-
-  // Timer state
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const [currentSession, setCurrentSession] = useState(0);
-  const [sessionStart, setSessionStart] = useState<Date | null>(null);
   
-  // Input states for adding notes and parts
+  // Input states for adding notes, parts, and time sessions
   const [newNote, setNewNote] = useState("");
+  const [newSessionDescription, setNewSessionDescription] = useState("");
   const [newPart, setNewPart] = useState({
     name: "",
     quantity: 1,
@@ -47,6 +47,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   // Collapsible states
   const [isPartsOpen, setIsPartsOpen] = useState(false);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
+  const [isTimeSessionsOpen, setIsTimeSessionsOpen] = useState(true); // Default open for time sessions
 
   // Check authentication state
   useEffect(() => {
@@ -63,44 +64,31 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isTimerRunning && sessionStart) {
-      interval = setInterval(() => {
-        setCurrentSession(Math.floor((Date.now() - sessionStart.getTime()) / 1000));
-      }, 1000);
+  const addTimeSession = () => {
+    if (newSessionDescription.trim()) {
+      createTimeSessionMutation.mutate(
+        { jobId: job.id, description: newSessionDescription.trim() },
+        {
+          onSuccess: () => {
+            setNewSessionDescription("");
+            toast({
+              title: "Time session created",
+              description: `Created "${newSessionDescription}" time tracking session`,
+            });
+          },
+          onError: () => {
+            toast({
+              title: "Error",
+              description: "Failed to create time session",
+              variant: "destructive",
+            });
+          },
+        }
+      );
     }
-    return () => clearInterval(interval);
-  }, [isTimerRunning, sessionStart]);
-
-  const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const startTimer = () => {
-    setIsTimerRunning(true);
-    setSessionStart(new Date());
-  };
-
-  const pauseTimer = () => {
-    if (sessionStart) {
-      const sessionTime = (new Date().getTime() - sessionStart.getTime()) / (1000 * 60 * 60); // Convert to hours
-      const currentSessionHours = currentSession / 3600; // Convert current session from seconds to hours
-      const newTotalHours = job.total_hours + currentSessionHours + sessionTime;
-      updateJobMutation.mutate({ id: job.id, updates: { total_hours: newTotalHours } });
-    }
-    setIsTimerRunning(false);
-    setCurrentSession(0);
-    setSessionStart(null);
   };
 
   const completeJob = () => {
-    if (isTimerRunning) {
-      pauseTimer();
-    }
     updateJobMutation.mutate({ id: job.id, updates: { status: "completed" } });
   };
 
@@ -201,8 +189,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
         
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <span className="font-medium">Time Logged:</span>
-            <p>{formatTime((job.total_hours * 3600) + currentSession)}</p>
+            <span className="font-medium">Total Hours:</span>
+            <p>{job.total_hours.toFixed(2)}h</p>
           </div>
           <div>
             <span className="font-medium">Labor Rate:</span>
@@ -222,32 +210,60 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
           Created: {formatDate(job.created_at)}
         </p>
 
-        {/* Timer Controls - Only show for authenticated users */}
-        {user && job.status === "active" && (
-          <div className="flex gap-2">
-            {!isTimerRunning ? (
-              <Button onClick={startTimer} size="sm" className="flex-1">
-                <Play className="h-4 w-4 mr-1" />
-                Start Timer
-              </Button>
-            ) : (
-              <Button onClick={pauseTimer} variant="secondary" size="sm" className="flex-1">
-                <Pause className="h-4 w-4 mr-1" />
-                Pause Timer
-              </Button>
-            )}
-            
-            <Button 
-              onClick={completeJob} 
-              variant="outline" 
-              size="sm"
-              className="border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+        {/* Complete Job Button - Only show for active jobs and authenticated users */}
+        {job.status === "active" && user && (
+          <div className="pt-4 border-t">
+            <Button
+              onClick={completeJob}
+              variant="outline"
+              className="w-full flex items-center gap-2 bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
             >
-              <CheckCircle className="h-4 w-4 mr-1" />
-              Complete
+              <CheckCircle className="h-4 w-4" />
+              Complete Job
             </Button>
           </div>
         )}
+
+        {/* Time Sessions Section */}
+        <Collapsible open={isTimeSessionsOpen} onOpenChange={setIsTimeSessionsOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" className="w-full justify-between p-2">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                <span>Time Sessions ({timeSessions.length})</span>
+              </div>
+              {isTimeSessionsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-3 p-2">
+            {timeSessions.map((session) => (
+              <TimeSessionCard 
+                key={session.id} 
+                session={session} 
+                isAuthenticated={!!user} 
+              />
+            ))}
+            
+            {/* Add Time Session Form - Only for authenticated users */}
+            {user && (
+              <div className="border-t pt-2 space-y-2">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Timer description (e.g., Engine repair, Hull cleaning)"
+                    value={newSessionDescription}
+                    onChange={(e) => setNewSessionDescription(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addTimeSession()}
+                    className="flex-1"
+                  />
+                  <Button onClick={addTimeSession} size="sm">
+                    <Plus className="h-3 w-3 mr-1" />
+                    Add
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
 
         {/* Admin Actions - Only show for authenticated users */}
         {user && (
