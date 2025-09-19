@@ -8,11 +8,13 @@ import backgroundImage from "@/assets/marina-workshop.jpg";
 
 export default function JobView() {
   const { jobId } = useParams<{ jobId: string }>();
-  const { data: job, isLoading: jobLoading, error: jobError } = useJobByToken(jobId || '');
-  const { data: parts = [], isLoading: partsLoading } = useJobParts(job?.id || '');
-  const { data: notes = [], isLoading: notesLoading } = useJobNotes(job?.id || '');
+  const { data: customerData, isLoading: jobLoading, error: jobError } = useJobByToken(jobId || '');
   
-  const isLoading = jobLoading || partsLoading || notesLoading;
+  const job = customerData?.job;
+  const parts = customerData?.parts || [];
+  const notes = customerData?.notes || [];
+  
+  const isLoading = jobLoading;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -56,12 +58,6 @@ export default function JobView() {
             <p className="text-muted-foreground mb-4">
               This job link is invalid or has expired. Please contact B & A Engine Worx for a valid job link.
             </p>
-            <Button asChild>
-              <Link to="/">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Home
-              </Link>
-            </Button>
           </Card>
         </div>
       );
@@ -75,12 +71,6 @@ export default function JobView() {
           <p className="text-muted-foreground mb-4">
             The job you're looking for doesn't exist or may have been removed.
           </p>
-          <Button asChild>
-            <Link to="/">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Link>
-          </Button>
         </Card>
       </div>
     );
@@ -113,14 +103,16 @@ export default function JobView() {
       </div>
 
       <div className="container mx-auto px-4 py-8 -mt-16 relative z-10 max-w-4xl">
-        {/* Back Button */}
+        {/* Customer Info Notice */}
         <div className="mb-6">
-          <Button variant="outline" asChild className="bg-card/95 backdrop-blur-sm">
-            <Link to="/">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Link>
-          </Button>
+          <Card className="bg-card/95 backdrop-blur-sm border-maritime-medium/20">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 text-maritime-medium">
+                <Anchor className="h-4 w-4" />
+                <span className="text-sm font-medium">Job Status Portal - Updates automatically as work progresses</span>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Job Details Card */}

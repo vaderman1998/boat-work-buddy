@@ -225,14 +225,14 @@ export const useJobByToken = (token: string) => {
   return useQuery({
     queryKey: ['job-by-token', token],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('jobs')
-        .select('*')
-        .eq('customer_token', token)
-        .single();
+      const { data, error } = await supabase.functions.invoke('customer-job', {
+        body: { token }
+      });
       
       if (error) throw error;
-      return data as Job;
+      if (data.error) throw new Error(data.error);
+      
+      return data;
     },
     enabled: !!token,
   });
