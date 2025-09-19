@@ -78,6 +78,39 @@ export type Database = {
           },
         ]
       }
+      job_time_sessions: {
+        Row: {
+          created_at: string
+          description: string
+          duration: number | null
+          end_time: string | null
+          id: string
+          job_id: string
+          start_time: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          duration?: number | null
+          end_time?: string | null
+          id?: string
+          job_id: string
+          start_time?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          duration?: number | null
+          end_time?: string | null
+          id?: string
+          job_id?: string
+          start_time?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           boat_name: string
@@ -152,7 +185,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_job_total_hours: {
+        Args: { job_uuid: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
