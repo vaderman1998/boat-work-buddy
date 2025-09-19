@@ -4,15 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Printer, Download, Anchor } from "lucide-react";
 import { useJobs, useJobParts, useJobNotes } from "@/hooks/useJobs";
+import { useTimeSessions } from "@/hooks/useTimeSessions";
 
 export default function Invoice() {
   const { jobId } = useParams<{ jobId: string }>();
   const { data: jobs = [], isLoading: jobsLoading } = useJobs();
   const { data: parts = [], isLoading: partsLoading } = useJobParts(jobId || '');
   const { data: notes = [], isLoading: notesLoading } = useJobNotes(jobId || '');
+  const { data: timeSessions = [], isLoading: timeSessionsLoading } = useTimeSessions(jobId || '');
   
   const job = jobs.find(j => j.id === jobId);
-  const isLoading = jobsLoading || partsLoading || notesLoading;
+  const isLoading = jobsLoading || partsLoading || notesLoading || timeSessionsLoading;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -60,7 +62,10 @@ export default function Invoice() {
 
   // Calculate costs
   const partsCost = parts.reduce((total, part) => total + (part.quantity * part.cost_per_unit), 0);
-  const laborCost = job.total_hours * job.hourly_rate;
+  const laborCost = timeSessions.reduce((total, session) => {
+    const hours = session.duration / 3600; // Convert seconds to hours
+    return total + (hours * job.hourly_rate);
+  }, 0);
   const totalAmount = partsCost + laborCost;
 
   // Generate invoice number based on job ID and date
@@ -144,18 +149,29 @@ export default function Invoice() {
               </tr>
             </thead>
             <tbody>
-              {/* Labor */}
-              <tr>
-                <td className="border border-border px-4 py-2">
-                  <div>
-                    <p className="font-medium">Labor - Engine Repair Service</p>
-                    <p className="text-sm text-muted-foreground">Professional boat engine repair and maintenance</p>
-                  </div>
-                </td>
-                <td className="border border-border px-4 py-2 text-center">{job.total_hours.toFixed(1)} hrs</td>
-                <td className="border border-border px-4 py-2 text-right">${job.hourly_rate.toFixed(2)}/hr</td>
-                <td className="border border-border px-4 py-2 text-right font-medium">${laborCost.toFixed(2)}</td>
-              </tr>
+              {/* Time Sessions */}
+              {timeSessions.map((session) => {
+                const hours = session.duration / 3600; // Convert seconds to hours
+                const sessionCost = hours * job.hourly_rate;
+                return (
+                  <tr key={session.id}>
+                    <td className="border border-border px-4 py-2">
+                      <div>
+                        <p className="font-medium">Labor - {session.description}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {session.start_time && formatDate(session.start_time)}
+                          {session.start_time && session.end_time && (
+                            <span> - {formatDate(session.end_time)}</span>
+                          )}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="border border-border px-4 py-2 text-center">{hours.toFixed(1)} hrs</td>
+                    <td className="border border-border px-4 py-2 text-right">${job.hourly_rate.toFixed(2)}/hr</td>
+                    <td className="border border-border px-4 py-2 text-right font-medium">${sessionCost.toFixed(2)}</td>
+                  </tr>
+                );
+              })}
               
               {/* Parts */}
               {parts.map((part) => (
