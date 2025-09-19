@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Play, Pause, Trash2 } from 'lucide-react';
-import { TimeSession, useStartTimer, useStopTimer, useDeleteTimeSession } from '@/hooks/useTimeSessions';
+import { Input } from '@/components/ui/input';
+import { Play, Pause, Trash2, Edit2, Check, X } from 'lucide-react';
+import { TimeSession, useStartTimer, useStopTimer, useDeleteTimeSession, useUpdateTimeSession } from '@/hooks/useTimeSessions';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -15,11 +16,14 @@ interface TimeSessionCardProps {
 export const TimeSessionCard = ({ session, isAuthenticated }: TimeSessionCardProps) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
+  const [isEditingRate, setIsEditingRate] = useState(false);
+  const [editRate, setEditRate] = useState(session.hourly_rate?.toString() || "75.00");
   const { toast } = useToast();
   
   const startTimerMutation = useStartTimer();
   const stopTimerMutation = useStopTimer();
   const deleteSessionMutation = useDeleteTimeSession();
+  const updateSessionMutation = useUpdateTimeSession();
 
   // Check if timer is currently running
   useEffect(() => {
@@ -119,6 +123,43 @@ export const TimeSessionCard = ({ session, isAuthenticated }: TimeSessionCardPro
     }
   };
 
+  const handleSaveRate = () => {
+    const newRate = parseFloat(editRate);
+    if (isNaN(newRate) || newRate <= 0) {
+      toast({
+        title: "Invalid rate",
+        description: "Please enter a valid hourly rate.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    updateSessionMutation.mutate(
+      { sessionId: session.id, hourlyRate: newRate },
+      {
+        onSuccess: () => {
+          setIsEditingRate(false);
+          toast({
+            title: "Rate updated",
+            description: "Hourly rate has been updated successfully.",
+          });
+        },
+        onError: () => {
+          toast({
+            title: "Error",
+            description: "Failed to update hourly rate.",
+            variant: "destructive",
+          });
+        },
+      }
+    );
+  };
+
+  const handleCancelEdit = () => {
+    setEditRate(session.hourly_rate?.toString() || "75.00");
+    setIsEditingRate(false);
+  };
+
   const getStatusBadge = () => {
     if (isRunning) {
       return <Badge className="bg-green-500 text-white">Running</Badge>;
@@ -138,7 +179,7 @@ export const TimeSessionCard = ({ session, isAuthenticated }: TimeSessionCardPro
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div className="text-2xl font-mono font-bold text-primary">
             {formatTime(currentTime)}
           </div>
@@ -168,6 +209,50 @@ export const TimeSessionCard = ({ session, isAuthenticated }: TimeSessionCardPro
             </div>
           )}
         </div>
+        
+        {isAuthenticated && (
+          <div className="flex items-center justify-between border-t pt-3">
+            <span className="text-sm text-muted-foreground">Hourly Rate:</span>
+            {isEditingRate ? (
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  value={editRate}
+                  onChange={(e) => setEditRate(e.target.value)}
+                  className="w-20 h-8 text-sm"
+                  step="0.01"
+                  min="0"
+                />
+                <Button 
+                  onClick={handleSaveRate} 
+                  size="sm" 
+                  variant="outline"
+                  disabled={updateSessionMutation.isPending}
+                >
+                  <Check className="h-3 w-3" />
+                </Button>
+                <Button 
+                  onClick={handleCancelEdit} 
+                  size="sm" 
+                  variant="outline"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="font-medium">${(session.hourly_rate || 75).toFixed(2)}/hr</span>
+                <Button 
+                  onClick={() => setIsEditingRate(true)} 
+                  size="sm" 
+                  variant="ghost"
+                >
+                  <Edit2 className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

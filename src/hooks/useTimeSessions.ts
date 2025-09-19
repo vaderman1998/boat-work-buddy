@@ -8,6 +8,7 @@ export interface TimeSession {
   start_time: string | null;
   end_time: string | null;
   duration: number;
+  hourly_rate: number;
   created_at: string;
   updated_at: string;
 }
@@ -35,13 +36,49 @@ export const useCreateTimeSession = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ jobId, description }: { jobId: string; description: string }) => {
+    mutationFn: async ({ jobId, description, hourlyRate }: { 
+      jobId: string; 
+      description: string; 
+      hourlyRate?: number;
+    }) => {
       const { data, error } = await supabase
         .from('job_time_sessions')
         .insert({
           job_id: jobId,
           description,
+          hourly_rate: hourlyRate || 75.00,
         })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as TimeSession;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['time-sessions', data.job_id] });
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+    },
+  });
+};
+
+// Hook to update a time session
+export const useUpdateTimeSession = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ sessionId, description, hourlyRate }: { 
+      sessionId: string; 
+      description?: string; 
+      hourlyRate?: number;
+    }) => {
+      const updateData: any = {};
+      if (description !== undefined) updateData.description = description;
+      if (hourlyRate !== undefined) updateData.hourly_rate = hourlyRate;
+
+      const { data, error } = await supabase
+        .from('job_time_sessions')
+        .update(updateData)
+        .eq('id', sessionId)
         .select()
         .single();
 

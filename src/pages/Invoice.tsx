@@ -64,7 +64,7 @@ export default function Invoice() {
   const partsCost = parts.reduce((total, part) => total + (part.quantity * part.cost_per_unit), 0);
   const laborCost = timeSessions.reduce((total, session) => {
     const hours = session.duration / 3600; // Convert seconds to hours
-    return total + (hours * job.hourly_rate);
+    return total + (hours * session.hourly_rate);
   }, 0);
   const totalAmount = partsCost + laborCost;
 
@@ -152,7 +152,7 @@ export default function Invoice() {
               {/* Time Sessions */}
               {timeSessions.map((session) => {
                 const hours = session.duration / 3600; // Convert seconds to hours
-                const sessionCost = hours * job.hourly_rate;
+                const sessionCost = hours * session.hourly_rate;
                 return (
                   <tr key={session.id}>
                     <td className="border border-border px-4 py-2">
@@ -167,7 +167,7 @@ export default function Invoice() {
                       </div>
                     </td>
                     <td className="border border-border px-4 py-2 text-center">{hours.toFixed(1)} hrs</td>
-                    <td className="border border-border px-4 py-2 text-right">${job.hourly_rate.toFixed(2)}/hr</td>
+                    <td className="border border-border px-4 py-2 text-right">${session.hourly_rate.toFixed(2)}/hr</td>
                     <td className="border border-border px-4 py-2 text-right font-medium">${sessionCost.toFixed(2)}</td>
                   </tr>
                 );

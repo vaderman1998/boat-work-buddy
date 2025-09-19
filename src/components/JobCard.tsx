@@ -67,7 +67,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const addTimeSession = () => {
     if (newSessionDescription.trim()) {
       createTimeSessionMutation.mutate(
-        { jobId: job.id, description: newSessionDescription.trim() },
+        { jobId: job.id, description: newSessionDescription.trim(), hourlyRate: job.hourly_rate },
         {
           onSuccess: () => {
             setNewSessionDescription("");

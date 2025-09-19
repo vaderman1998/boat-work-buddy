@@ -84,6 +84,7 @@ export type Database = {
           description: string
           duration: number | null
           end_time: string | null
+          hourly_rate: number | null
           id: string
           job_id: string
           start_time: string | null
@@ -94,6 +95,7 @@ export type Database = {
           description: string
           duration?: number | null
           end_time?: string | null
+          hourly_rate?: number | null
           id?: string
           job_id: string
           start_time?: string | null
@@ -104,6 +106,7 @@ export type Database = {
           description?: string
           duration?: number | null
           end_time?: string | null
+          hourly_rate?: number | null
           id?: string
           job_id?: string
           start_time?: string | null
