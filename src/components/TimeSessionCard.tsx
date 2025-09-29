@@ -20,6 +20,9 @@ export const TimeSessionCard = ({ session, isAuthenticated }: TimeSessionCardPro
   const [editRate, setEditRate] = useState(session.hourly_rate?.toString() || "75.00");
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [editDescription, setEditDescription] = useState(session.description);
+  const [isEditingTime, setIsEditingTime] = useState(false);
+  const [editHours, setEditHours] = useState(Math.floor(session.duration / 3600).toString());
+  const [editMinutes, setEditMinutes] = useState(Math.floor((session.duration % 3600) / 60).toString());
   const { toast } = useToast();
   
   const startTimerMutation = useStartTimer();
@@ -198,6 +201,48 @@ export const TimeSessionCard = ({ session, isAuthenticated }: TimeSessionCardPro
     setIsEditingDescription(false);
   };
 
+  const handleSaveTime = () => {
+    const hours = parseInt(editHours) || 0;
+    const minutes = parseInt(editMinutes) || 0;
+    
+    if (hours < 0 || minutes < 0 || minutes >= 60) {
+      toast({
+        title: "Invalid time",
+        description: "Please enter valid hours and minutes.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newDuration = (hours * 3600) + (minutes * 60);
+
+    updateSessionMutation.mutate(
+      { sessionId: session.id, duration: newDuration },
+      {
+        onSuccess: () => {
+          setIsEditingTime(false);
+          toast({
+            title: "Time updated",
+            description: "Timer duration has been updated successfully.",
+          });
+        },
+        onError: () => {
+          toast({
+            title: "Error",
+            description: "Failed to update time.",
+            variant: "destructive",
+          });
+        },
+      }
+    );
+  };
+
+  const handleCancelTimeEdit = () => {
+    setEditHours(Math.floor(session.duration / 3600).toString());
+    setEditMinutes(Math.floor((session.duration % 3600) / 60).toString());
+    setIsEditingTime(false);
+  };
+
   const getStatusBadge = () => {
     if (isRunning) {
       return <Badge className="bg-green-500 text-white">Running</Badge>;
@@ -257,33 +302,89 @@ export const TimeSessionCard = ({ session, isAuthenticated }: TimeSessionCardPro
       </CardHeader>
       <CardContent>
         <div className="flex items-center justify-between mb-4">
-          <div className="text-2xl font-mono font-bold text-primary">
-            {formatTime(currentTime)}
-          </div>
-          
-          {isAuthenticated && (
-            <div className="flex gap-2">
-              {!isRunning && (!session.start_time || session.end_time) ? (
-                <Button onClick={handleStart} size="sm" className="gap-2">
-                  <Play className="h-4 w-4" />
-                  Start
-                </Button>
-              ) : isRunning ? (
-                <Button onClick={handleStop} size="sm" variant="secondary" className="gap-2">
-                  <Pause className="h-4 w-4" />
-                  Stop
-                </Button>
-              ) : null}
-              
-              <Button
-                onClick={handleDelete}
-                size="sm"
+          {isEditingTime && isAuthenticated ? (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  value={editHours}
+                  onChange={(e) => setEditHours(e.target.value)}
+                  className="w-16 h-10 text-center"
+                  min="0"
+                  placeholder="0"
+                />
+                <span className="text-lg font-medium">h</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  value={editMinutes}
+                  onChange={(e) => setEditMinutes(e.target.value)}
+                  className="w-16 h-10 text-center"
+                  min="0"
+                  max="59"
+                  placeholder="0"
+                />
+                <span className="text-lg font-medium">m</span>
+              </div>
+              <Button 
+                onClick={handleSaveTime} 
+                size="sm" 
                 variant="outline"
-                className="gap-2 text-destructive hover:text-destructive-foreground hover:bg-destructive"
+                disabled={updateSessionMutation.isPending}
               >
-                <Trash2 className="h-4 w-4" />
+                <Check className="h-3 w-3" />
+              </Button>
+              <Button 
+                onClick={handleCancelTimeEdit} 
+                size="sm" 
+                variant="outline"
+              >
+                <X className="h-3 w-3" />
               </Button>
             </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <div className="text-2xl font-mono font-bold text-primary">
+                  {formatTime(currentTime)}
+                </div>
+                {isAuthenticated && !isRunning && (
+                  <Button 
+                    onClick={() => setIsEditingTime(true)} 
+                    size="sm" 
+                    variant="ghost"
+                  >
+                    <Edit2 className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+              
+              {isAuthenticated && (
+                <div className="flex gap-2">
+                  {!isRunning && (!session.start_time || session.end_time) ? (
+                    <Button onClick={handleStart} size="sm" className="gap-2">
+                      <Play className="h-4 w-4" />
+                      Start
+                    </Button>
+                  ) : isRunning ? (
+                    <Button onClick={handleStop} size="sm" variant="secondary" className="gap-2">
+                      <Pause className="h-4 w-4" />
+                      Stop
+                    </Button>
+                  ) : null}
+                  
+                  <Button
+                    onClick={handleDelete}
+                    size="sm"
+                    variant="outline"
+                    className="gap-2 text-destructive hover:text-destructive-foreground hover:bg-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
         

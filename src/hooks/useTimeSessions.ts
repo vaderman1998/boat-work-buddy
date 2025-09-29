@@ -66,14 +66,16 @@ export const useUpdateTimeSession = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ sessionId, description, hourlyRate }: { 
+    mutationFn: async ({ sessionId, description, hourlyRate, duration }: { 
       sessionId: string; 
       description?: string; 
       hourlyRate?: number;
+      duration?: number;
     }) => {
       const updateData: any = {};
       if (description !== undefined) updateData.description = description;
       if (hourlyRate !== undefined) updateData.hourly_rate = hourlyRate;
+      if (duration !== undefined) updateData.duration = duration;
 
       const { data, error } = await supabase
         .from('job_time_sessions')
