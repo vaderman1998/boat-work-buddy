@@ -18,6 +18,8 @@ export const TimeSessionCard = ({ session, isAuthenticated }: TimeSessionCardPro
   const [isRunning, setIsRunning] = useState(false);
   const [isEditingRate, setIsEditingRate] = useState(false);
   const [editRate, setEditRate] = useState(session.hourly_rate?.toString() || "75.00");
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [editDescription, setEditDescription] = useState(session.description);
   const { toast } = useToast();
   
   const startTimerMutation = useStartTimer();
@@ -160,6 +162,42 @@ export const TimeSessionCard = ({ session, isAuthenticated }: TimeSessionCardPro
     setIsEditingRate(false);
   };
 
+  const handleSaveDescription = () => {
+    if (!editDescription.trim()) {
+      toast({
+        title: "Invalid description",
+        description: "Description cannot be empty.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    updateSessionMutation.mutate(
+      { sessionId: session.id, description: editDescription },
+      {
+        onSuccess: () => {
+          setIsEditingDescription(false);
+          toast({
+            title: "Description updated",
+            description: "Timer description has been updated successfully.",
+          });
+        },
+        onError: () => {
+          toast({
+            title: "Error",
+            description: "Failed to update description.",
+            variant: "destructive",
+          });
+        },
+      }
+    );
+  };
+
+  const handleCancelDescriptionEdit = () => {
+    setEditDescription(session.description);
+    setIsEditingDescription(false);
+  };
+
   const getStatusBadge = () => {
     if (isRunning) {
       return <Badge className="bg-green-500 text-white">Running</Badge>;
@@ -173,9 +211,48 @@ export const TimeSessionCard = ({ session, isAuthenticated }: TimeSessionCardPro
   return (
     <Card className="border-l-4 border-l-primary">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">{session.description}</CardTitle>
-          {getStatusBadge()}
+        <div className="flex items-center justify-between gap-2">
+          {isEditingDescription && isAuthenticated ? (
+            <div className="flex items-center gap-2 flex-1">
+              <Input
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                className="flex-1"
+                placeholder="Timer description"
+              />
+              <Button 
+                onClick={handleSaveDescription} 
+                size="sm" 
+                variant="outline"
+                disabled={updateSessionMutation.isPending}
+              >
+                <Check className="h-3 w-3" />
+              </Button>
+              <Button 
+                onClick={handleCancelDescriptionEdit} 
+                size="sm" 
+                variant="outline"
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-lg">{session.description}</CardTitle>
+                {isAuthenticated && (
+                  <Button 
+                    onClick={() => setIsEditingDescription(true)} 
+                    size="sm" 
+                    variant="ghost"
+                  >
+                    <Edit2 className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+              {getStatusBadge()}
+            </>
+          )}
         </div>
       </CardHeader>
       <CardContent>
