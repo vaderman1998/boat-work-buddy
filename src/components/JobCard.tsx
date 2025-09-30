@@ -9,7 +9,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Clock, Play, Pause, CheckCircle, Trash2, ChevronDown, ChevronRight, Plus, Package, FileText, Copy, Anchor, Share2, Receipt } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { useUpdateJob, useDeleteJob, useJobParts, useJobNotes, useAddJobPart, useAddJobNote, type Job } from "@/hooks/useJobs";
+import { useUpdateJob, useDeleteJob, useJobParts, useJobNotes, useAddJobPart, useAddJobNote, useUpdateJobPart, useUpdateJobNote, type Job } from "@/hooks/useJobs";
 import { useTimeSessions, useCreateTimeSession } from "@/hooks/useTimeSessions";
 import { TimeSessionCard } from "@/components/TimeSessionCard";
 import { cn } from "@/lib/utils";
@@ -30,6 +30,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const deleteJobMutation = useDeleteJob();
   const addPartMutation = useAddJobPart();
   const addNoteMutation = useAddJobNote();
+  const updatePartMutation = useUpdateJobPart();
+  const updateNoteMutation = useUpdateJobNote();
   const createTimeSessionMutation = useCreateTimeSession();
 
   // Authentication state
@@ -48,6 +50,12 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const [isPartsOpen, setIsPartsOpen] = useState(false);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [isTimeSessionsOpen, setIsTimeSessionsOpen] = useState(true); // Default open for time sessions
+  
+  // Edit states
+  const [editingPartId, setEditingPartId] = useState<string | null>(null);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editPartData, setEditPartData] = useState({ name: "", quantity: 1, cost_per_unit: 0 });
+  const [editNoteContent, setEditNoteContent] = useState("");
 
   // Check authentication state
   useEffect(() => {
@@ -142,6 +150,60 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
         description: "Secure customer viewing link has been copied to clipboard.",
       });
     });
+  };
+
+  const startEditingPart = (part: any) => {
+    setEditingPartId(part.id);
+    setEditPartData({
+      name: part.name,
+      quantity: part.quantity,
+      cost_per_unit: part.cost_per_unit
+    });
+  };
+
+  const cancelEditingPart = () => {
+    setEditingPartId(null);
+    setEditPartData({ name: "", quantity: 1, cost_per_unit: 0 });
+  };
+
+  const saveEditedPart = (id: string) => {
+    if (editPartData.name.trim() && editPartData.quantity > 0 && editPartData.cost_per_unit >= 0) {
+      updatePartMutation.mutate({
+        id,
+        name: editPartData.name.trim(),
+        quantity: editPartData.quantity,
+        cost_per_unit: editPartData.cost_per_unit
+      }, {
+        onSuccess: () => {
+          setEditingPartId(null);
+          setEditPartData({ name: "", quantity: 1, cost_per_unit: 0 });
+        }
+      });
+    }
+  };
+
+  const startEditingNote = (note: any) => {
+    setEditingNoteId(note.id);
+    setEditNoteContent(note.content);
+  };
+
+  const cancelEditingNote = () => {
+    setEditingNoteId(null);
+    setEditNoteContent("");
+  };
+
+  const saveEditedNote = (id: string) => {
+    if (editNoteContent.trim()) {
+      updateNoteMutation.mutate({
+        id,
+        content: editNoteContent.trim()
+      }, {
+        onSuccess: () => {
+          setEditingNoteId(null);
+          setEditNoteContent("");
+        }
+      });
+    }
   };
 
   return (
@@ -317,13 +379,70 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-2 p-2">
             {parts.map((part) => (
-              <div key={part.id} className="flex justify-between items-center p-2 bg-muted rounded">
-                <div>
-                  <p className="font-medium">{part.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    Qty: {part.quantity} × ${part.cost_per_unit.toFixed(2)} = ${(part.quantity * part.cost_per_unit).toFixed(2)}
-                  </p>
-                </div>
+              <div key={part.id} className="p-2 bg-muted rounded space-y-2">
+                {editingPartId === part.id ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-xs">Part Name</Label>
+                        <Input
+                          value={editPartData.name}
+                          onChange={(e) => setEditPartData({ ...editPartData, name: e.target.value })}
+                          className="h-8"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Quantity</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={editPartData.quantity}
+                          onChange={(e) => setEditPartData({ ...editPartData, quantity: parseInt(e.target.value) || 1 })}
+                          className="h-8"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <Label className="text-xs">Cost per Unit ($)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={editPartData.cost_per_unit}
+                          onChange={(e) => setEditPartData({ ...editPartData, cost_per_unit: parseFloat(e.target.value) || 0 })}
+                          className="h-8"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <Button size="sm" variant="ghost" onClick={cancelEditingPart}>
+                        Cancel
+                      </Button>
+                      <Button size="sm" onClick={() => saveEditedPart(part.id)}>
+                        Save
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-medium">{part.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Qty: {part.quantity} × ${part.cost_per_unit.toFixed(2)} = ${(part.quantity * part.cost_per_unit).toFixed(2)}
+                      </p>
+                    </div>
+                    {user && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => startEditingPart(part)}
+                      >
+                        Edit
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
             
@@ -394,11 +513,44 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-2 p-2">
             {notes.map((note) => (
-              <div key={note.id} className="p-2 bg-muted rounded">
-                <p className="text-sm">{note.content}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {formatDate(note.created_at)}
-                </p>
+              <div key={note.id} className="p-2 bg-muted rounded space-y-2">
+                {editingNoteId === note.id ? (
+                  <>
+                    <Textarea
+                      value={editNoteContent}
+                      onChange={(e) => setEditNoteContent(e.target.value)}
+                      className="min-h-[60px]"
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <Button size="sm" variant="ghost" onClick={cancelEditingNote}>
+                        Cancel
+                      </Button>
+                      <Button size="sm" onClick={() => saveEditedNote(note.id)}>
+                        Save
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="flex-1">
+                        <p className="text-sm">{note.content}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {formatDate(note.created_at)}
+                        </p>
+                      </div>
+                      {user && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => startEditingNote(note)}
+                        >
+                          Edit
+                        </Button>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             ))}
             

@@ -221,6 +221,80 @@ export const useAddJobNote = () => {
   });
 };
 
+export const useUpdateJobPart = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ 
+      id, 
+      name, 
+      quantity, 
+      cost_per_unit 
+    }: { 
+      id: string; 
+      name: string; 
+      quantity: number; 
+      cost_per_unit: number;
+    }) => {
+      const { data, error } = await supabase
+        .from('job_parts')
+        .update({ name, quantity, cost_per_unit })
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['job-parts', data.job_id] });
+      toast({
+        title: "Part updated",
+        description: "Part has been updated successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error updating part",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useUpdateJobNote = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ id, content }: { id: string; content: string }) => {
+      const { data, error } = await supabase
+        .from('job_notes')
+        .update({ content })
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['job-notes', data.job_id] });
+      toast({
+        title: "Note updated",
+        description: "Progress note has been updated successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error updating note",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+};
+
 export const useJobByToken = (token: string) => {
   return useQuery({
     queryKey: ['job-by-token', token],
