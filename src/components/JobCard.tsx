@@ -56,6 +56,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editPartData, setEditPartData] = useState({ name: "", quantity: 1, cost_per_unit: 0 });
   const [editNoteContent, setEditNoteContent] = useState("");
+  const [isEditingHourlyRate, setIsEditingHourlyRate] = useState(false);
+  const [editHourlyRate, setEditHourlyRate] = useState(job.hourly_rate);
 
   // Check authentication state
   useEffect(() => {
@@ -206,6 +208,29 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
     }
   };
 
+  const startEditingHourlyRate = () => {
+    setIsEditingHourlyRate(true);
+    setEditHourlyRate(job.hourly_rate);
+  };
+
+  const cancelEditingHourlyRate = () => {
+    setIsEditingHourlyRate(false);
+    setEditHourlyRate(job.hourly_rate);
+  };
+
+  const saveEditedHourlyRate = () => {
+    if (editHourlyRate > 0) {
+      updateJobMutation.mutate({
+        id: job.id,
+        updates: { hourly_rate: editHourlyRate }
+      }, {
+        onSuccess: () => {
+          setIsEditingHourlyRate(false);
+        }
+      });
+    }
+  };
+
   return (
     <Card className={cn(
       "transition-all duration-300 hover:shadow-lg",
@@ -256,7 +281,38 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
           </div>
           <div>
             <span className="font-medium">Labor Rate:</span>
-            <p>${job.hourly_rate}/hour</p>
+            {isEditingHourlyRate && user ? (
+              <div className="flex gap-1 items-center mt-1">
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={editHourlyRate}
+                  onChange={(e) => setEditHourlyRate(parseFloat(e.target.value) || 0)}
+                  className="h-7 w-24"
+                />
+                <Button size="sm" variant="ghost" className="h-7 px-2" onClick={cancelEditingHourlyRate}>
+                  Cancel
+                </Button>
+                <Button size="sm" className="h-7 px-2" onClick={saveEditedHourlyRate}>
+                  Save
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <p>${job.hourly_rate}/hour</p>
+                {user && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 px-2 text-xs"
+                    onClick={startEditingHourlyRate}
+                  >
+                    Edit
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
           <div>
             <span className="font-medium">Parts Cost:</span>
