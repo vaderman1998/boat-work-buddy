@@ -61,8 +61,10 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   // Edit states
   const [editingPartId, setEditingPartId] = useState<string | null>(null);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editingManualLaborId, setEditingManualLaborId] = useState<string | null>(null);
   const [editPartData, setEditPartData] = useState({ name: "", quantity: 1, cost_per_unit: 0 });
   const [editNoteContent, setEditNoteContent] = useState("");
+  const [editManualLaborCost, setEditManualLaborCost] = useState("");
   const [isEditingHourlyRate, setIsEditingHourlyRate] = useState(false);
   const [editHourlyRate, setEditHourlyRate] = useState(job.hourly_rate);
 
@@ -326,6 +328,38 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
     }
   };
 
+  const startEditingManualLabor = (entry: any) => {
+    setEditingManualLaborId(entry.id);
+    const currentCost = ((entry.duration / 3600) * (entry.hourly_rate || job.hourly_rate));
+    setEditManualLaborCost(currentCost.toFixed(2));
+  };
+
+  const cancelEditingManualLabor = () => {
+    setEditingManualLaborId(null);
+    setEditManualLaborCost("");
+  };
+
+  const saveEditedManualLabor = async (id: string) => {
+    const newCost = parseFloat(editManualLaborCost);
+    if (newCost > 0) {
+      // Update with 1 hour duration and custom rate equal to the cost
+      await supabase
+        .from('job_time_sessions')
+        .update({ 
+          duration: 3600, // 1 hour
+          hourly_rate: newCost // Rate equals cost since duration is 1 hour
+        })
+        .eq('id', id);
+      
+      setEditingManualLaborId(null);
+      setEditManualLaborCost("");
+      toast({
+        title: 'Success',
+        description: 'Manual labor cost updated',
+      });
+    }
+  };
+
   return (
     <Card className={cn(
       "transition-all duration-300 hover:shadow-lg",
@@ -514,37 +548,72 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
             {timeSessions.filter(s => !s.start_time && s.duration > 0).map((entry) => (
               <Card key={entry.id} className="border-l-4 border-l-blue-500">
                 <CardContent className="p-3">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex-1">
-                      <p className="font-medium">{entry.description}</p>
-                      <p className="text-sm font-semibold text-primary">
-                        ${((entry.duration / 3600) * (entry.hourly_rate || job.hourly_rate)).toFixed(2)}
-                      </p>
+                  {editingManualLaborId === entry.id ? (
+                    <div className="space-y-2">
+                      <p className="font-medium text-sm">{entry.description}</p>
+                      <div className="flex gap-2 items-center">
+                        <span className="text-sm font-medium whitespace-nowrap">Cost:</span>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={editManualLaborCost}
+                          onChange={(e) => setEditManualLaborCost(e.target.value)}
+                          className="flex-1 h-8"
+                        />
+                      </div>
+                      <div className="flex gap-2 justify-end">
+                        <Button size="sm" variant="ghost" onClick={cancelEditingManualLabor}>
+                          Cancel
+                        </Button>
+                        <Button size="sm" onClick={() => saveEditedManualLabor(entry.id)}>
+                          Save
+                        </Button>
+                      </div>
                     </div>
-                    {user && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-destructive hover:text-destructive-foreground hover:bg-destructive h-7 w-7 p-0"
-                        onClick={() => {
-                          if (window.confirm('Delete this labor entry?')) {
-                            supabase
-                              .from('job_time_sessions')
-                              .delete()
-                              .eq('id', entry.id)
-                              .then(() => {
-                                toast({
-                                  title: 'Deleted',
-                                  description: 'Labor entry removed'
-                                });
-                              });
-                          }
-                        }}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    )}
-                  </div>
+                  ) : (
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1">
+                        <p className="font-medium">{entry.description}</p>
+                        <p className="text-sm font-semibold text-primary">
+                          ${((entry.duration / 3600) * (entry.hourly_rate || job.hourly_rate)).toFixed(2)}
+                        </p>
+                      </div>
+                      {user && (
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 px-2"
+                            onClick={() => startEditingManualLabor(entry)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-destructive hover:text-destructive-foreground hover:bg-destructive h-7 w-7 p-0"
+                            onClick={() => {
+                              if (window.confirm('Delete this labor entry?')) {
+                                supabase
+                                  .from('job_time_sessions')
+                                  .delete()
+                                  .eq('id', entry.id)
+                                  .then(() => {
+                                    toast({
+                                      title: 'Deleted',
+                                      description: 'Labor entry removed'
+                                    });
+                                  });
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
