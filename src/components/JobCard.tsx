@@ -45,7 +45,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const [newManualLaborDesc, setNewManualLaborDesc] = useState("");
   const [newManualLaborHours, setNewManualLaborHours] = useState("");
   const [newManualLaborMinutes, setNewManualLaborMinutes] = useState("");
-  const [newManualLaborRate, setNewManualLaborRate] = useState("");
+  const [newManualLaborCost, setNewManualLaborCost] = useState("");
   const [newPart, setNewPart] = useState({
     name: "",
     quantity: 1,
@@ -149,29 +149,20 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
       return;
     }
 
-    const hours = parseInt(newManualLaborHours) || 0;
-    const minutes = parseInt(newManualLaborMinutes) || 0;
+    const flatCost = parseFloat(newManualLaborCost) || 0;
     
-    if (hours === 0 && minutes === 0) {
+    if (flatCost <= 0) {
       toast({
         title: 'Error',
-        description: 'Please enter hours or minutes',
+        description: 'Please enter a cost amount',
         variant: 'destructive'
       });
       return;
     }
 
-    if (minutes >= 60) {
-      toast({
-        title: 'Error',
-        description: 'Minutes must be less than 60',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    const duration = (hours * 3600) + (minutes * 60);
-    const customRate = parseFloat(newManualLaborRate) || job.hourly_rate;
+    // Store as 1 hour with custom rate equal to the flat cost
+    const duration = 3600; // 1 hour in seconds
+    const customRate = flatCost; // Rate equals the total cost since duration is 1 hour
 
     createTimeSessionMutation.mutate({
       jobId: job.id,
@@ -179,19 +170,17 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
       hourlyRate: customRate,
     }, {
       onSuccess: async (newSession) => {
-        // Set the duration immediately (no timer needed)
+        // Set the duration to 1 hour
         await supabase
           .from('job_time_sessions')
           .update({ duration })
           .eq('id', newSession.id);
         
         setNewManualLaborDesc("");
-        setNewManualLaborHours("");
-        setNewManualLaborMinutes("");
-        setNewManualLaborRate("");
+        setNewManualLaborCost("");
         toast({
           title: 'Success',
-          description: `Manual labor entry added: ${hours}h ${minutes}m at $${customRate.toFixed(2)}/hr`,
+          description: `Manual labor entry added: $${flatCost.toFixed(2)}`,
         });
       },
       onError: () => {
@@ -528,8 +517,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex-1">
                       <p className="font-medium">{entry.description}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {Math.floor(entry.duration / 3600)}h {Math.floor((entry.duration % 3600) / 60)}m
+                      <p className="text-sm font-semibold text-primary">
+                        ${((entry.duration / 3600) * (entry.hourly_rate || job.hourly_rate)).toFixed(2)}
                       </p>
                     </div>
                     {user && (
@@ -556,10 +545,6 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
                       </Button>
                     )}
                   </div>
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Rate: ${(entry.hourly_rate || job.hourly_rate).toFixed(2)}/hr</span>
-                    <span>Cost: ${((entry.duration / 3600) * (entry.hourly_rate || job.hourly_rate)).toFixed(2)}</span>
-                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -573,34 +558,14 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
                   onChange={(e) => setNewManualLaborDesc(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && addManualLabor()}
                 />
-                <div className="flex gap-2">
-                  <div className="flex items-center gap-1 flex-1">
-                    <Input
-                      type="number"
-                      placeholder="Hours"
-                      value={newManualLaborHours}
-                      onChange={(e) => setNewManualLaborHours(e.target.value)}
-                      className="w-20"
-                      min="0"
-                    />
-                    <span className="text-sm">h</span>
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={newManualLaborMinutes}
-                      onChange={(e) => setNewManualLaborMinutes(e.target.value)}
-                      className="w-20"
-                      min="0"
-                      max="59"
-                    />
-                    <span className="text-sm">m</span>
-                  </div>
+                <div className="flex gap-2 items-center">
+                  <span className="text-sm font-medium whitespace-nowrap">Cost:</span>
                   <Input
                     type="number"
-                    placeholder={`Rate ($${job.hourly_rate}/hr)`}
-                    value={newManualLaborRate}
-                    onChange={(e) => setNewManualLaborRate(e.target.value)}
-                    className="w-32"
+                    placeholder="0.00"
+                    value={newManualLaborCost}
+                    onChange={(e) => setNewManualLaborCost(e.target.value)}
+                    className="flex-1"
                     min="0"
                     step="0.01"
                   />
@@ -609,7 +574,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
                     Add Entry
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground">For estimates and fixed labor entries. Leave rate blank to use default.</p>
+                <p className="text-xs text-muted-foreground">Enter a flat cost for estimates and fixed labor entries.</p>
               </div>
             )}
           </CollapsibleContent>
