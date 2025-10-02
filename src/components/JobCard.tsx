@@ -45,6 +45,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const [newManualLaborDesc, setNewManualLaborDesc] = useState("");
   const [newManualLaborHours, setNewManualLaborHours] = useState("");
   const [newManualLaborMinutes, setNewManualLaborMinutes] = useState("");
+  const [newManualLaborRate, setNewManualLaborRate] = useState("");
   const [newPart, setNewPart] = useState({
     name: "",
     quantity: 1,
@@ -170,11 +171,12 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
     }
 
     const duration = (hours * 3600) + (minutes * 60);
+    const customRate = parseFloat(newManualLaborRate) || job.hourly_rate;
 
     createTimeSessionMutation.mutate({
       jobId: job.id,
       description: newManualLaborDesc.trim(),
-      hourlyRate: job.hourly_rate,
+      hourlyRate: customRate,
     }, {
       onSuccess: async (newSession) => {
         // Set the duration immediately (no timer needed)
@@ -186,9 +188,10 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
         setNewManualLaborDesc("");
         setNewManualLaborHours("");
         setNewManualLaborMinutes("");
+        setNewManualLaborRate("");
         toast({
           title: 'Success',
-          description: `Manual labor entry added: ${hours}h ${minutes}m`,
+          description: `Manual labor entry added: ${hours}h ${minutes}m at $${customRate.toFixed(2)}/hr`,
         });
       },
       onError: () => {
@@ -592,12 +595,21 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
                     />
                     <span className="text-sm">m</span>
                   </div>
+                  <Input
+                    type="number"
+                    placeholder={`Rate ($${job.hourly_rate}/hr)`}
+                    value={newManualLaborRate}
+                    onChange={(e) => setNewManualLaborRate(e.target.value)}
+                    className="w-32"
+                    min="0"
+                    step="0.01"
+                  />
                   <Button onClick={addManualLabor} size="sm">
                     <Plus className="h-3 w-3 mr-1" />
                     Add Entry
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground">For estimates and fixed labor entries</p>
+                <p className="text-xs text-muted-foreground">For estimates and fixed labor entries. Leave rate blank to use default.</p>
               </div>
             )}
           </CollapsibleContent>
