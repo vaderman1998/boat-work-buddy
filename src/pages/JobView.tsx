@@ -189,18 +189,18 @@ export default function JobView() {
         </Card>
 
         {/* Time Sessions Section */}
-        {timeSessions && timeSessions.length > 0 && (
+        {timeSessions && timeSessions.filter(s => s.start_time || s.duration === 0).length > 0 && (
           <Card className="bg-card/95 backdrop-blur-sm shadow-lg mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5 text-maritime-medium" />
                 <span>Time Sessions</span>
-                <Badge variant="outline">{timeSessions.length}</Badge>
+                <Badge variant="outline">{timeSessions.filter(s => s.start_time || s.duration === 0).length}</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {timeSessions.map((session) => {
+                {timeSessions.filter(s => s.start_time || s.duration === 0).map((session) => {
                   const isRunning = session.start_time && !session.end_time;
                   const duration = session.start_time && session.end_time 
                     ? (new Date(session.end_time).getTime() - new Date(session.start_time).getTime()) / 1000
@@ -240,6 +240,51 @@ export default function JobView() {
                       {!session.start_time && (
                         <p className="text-sm text-muted-foreground">Timer not yet started</p>
                       )}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Manual Labor Entries Section */}
+        {timeSessions && timeSessions.filter(s => !s.start_time && s.duration > 0).length > 0 && (
+          <Card className="bg-card/95 backdrop-blur-sm shadow-lg mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-maritime-medium" />
+                <span>Manual Labor Entries</span>
+                <Badge variant="outline">{timeSessions.filter(s => !s.start_time && s.duration > 0).length}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {timeSessions.filter(s => !s.start_time && s.duration > 0).map((entry) => {
+                  const hours = Math.floor(entry.duration / 3600);
+                  const minutes = Math.floor((entry.duration % 3600) / 60);
+                  const cost = (entry.duration / 3600) * (entry.hourly_rate || job?.hourly_rate || 75);
+                  
+                  return (
+                    <div key={entry.id} className="p-4 bg-muted rounded-lg border-l-4 border-l-blue-500">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-semibold">{entry.description}</h4>
+                        <Badge variant="secondary">Estimate</Badge>
+                      </div>
+                      <div className="grid grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Duration</p>
+                          <p className="font-medium">{hours}h {minutes}m</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Rate</p>
+                          <p className="font-medium">${(entry.hourly_rate || job?.hourly_rate || 75).toFixed(2)}/hr</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Cost</p>
+                          <p className="font-medium">${cost.toFixed(2)}</p>
+                        </div>
+                      </div>
                     </div>
                   );
                 })}

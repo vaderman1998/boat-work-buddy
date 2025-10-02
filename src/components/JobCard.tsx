@@ -42,6 +42,9 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const [newSessionDescription, setNewSessionDescription] = useState("");
   const [newSessionHours, setNewSessionHours] = useState("");
   const [newSessionMinutes, setNewSessionMinutes] = useState("");
+  const [newManualLaborDesc, setNewManualLaborDesc] = useState("");
+  const [newManualLaborHours, setNewManualLaborHours] = useState("");
+  const [newManualLaborMinutes, setNewManualLaborMinutes] = useState("");
   const [newPart, setNewPart] = useState({
     name: "",
     quantity: 1,
@@ -52,6 +55,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const [isPartsOpen, setIsPartsOpen] = useState(false);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [isTimeSessionsOpen, setIsTimeSessionsOpen] = useState(true); // Default open for time sessions
+  const [isManualLaborOpen, setIsManualLaborOpen] = useState(true);
   
   // Edit states
   const [editingPartId, setEditingPartId] = useState<string | null>(null);
@@ -128,6 +132,69 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
         toast({
           title: "Error",
           description: "Failed to create time session",
+          variant: "destructive",
+        });
+      },
+    });
+  };
+
+  const addManualLabor = () => {
+    if (!newManualLaborDesc.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please enter a description for the labor entry',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const hours = parseInt(newManualLaborHours) || 0;
+    const minutes = parseInt(newManualLaborMinutes) || 0;
+    
+    if (hours === 0 && minutes === 0) {
+      toast({
+        title: 'Error',
+        description: 'Please enter hours or minutes',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (minutes >= 60) {
+      toast({
+        title: 'Error',
+        description: 'Minutes must be less than 60',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const duration = (hours * 3600) + (minutes * 60);
+
+    createTimeSessionMutation.mutate({
+      jobId: job.id,
+      description: newManualLaborDesc.trim(),
+      hourlyRate: job.hourly_rate,
+    }, {
+      onSuccess: async (newSession) => {
+        // Set the duration immediately (no timer needed)
+        await supabase
+          .from('job_time_sessions')
+          .update({ duration })
+          .eq('id', newSession.id);
+        
+        setNewManualLaborDesc("");
+        setNewManualLaborHours("");
+        setNewManualLaborMinutes("");
+        toast({
+          title: 'Success',
+          description: `Manual labor entry added: ${hours}h ${minutes}m`,
+        });
+      },
+      onError: () => {
+        toast({
+          title: "Error",
+          description: "Failed to add manual labor entry",
           variant: "destructive",
         });
       },
@@ -384,13 +451,13 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
             <Button variant="ghost" className="w-full justify-between p-2">
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
-                <span>Time Sessions ({timeSessions.length})</span>
+                <span>Time Sessions ({timeSessions.filter(s => s.start_time || s.duration === 0).length})</span>
               </div>
               {isTimeSessionsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-3 p-2">
-            {timeSessions.map((session) => (
+            {timeSessions.filter(s => s.start_time || s.duration === 0).map((session) => (
               <TimeSessionCard 
                 key={session.id} 
                 session={session} 
@@ -435,6 +502,102 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">Leave hours/minutes blank to use timer later</p>
+              </div>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Manual Labor Section - For estimates and non-timer entries */}
+        <Collapsible open={isManualLaborOpen} onOpenChange={setIsManualLaborOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" className="w-full justify-between p-2">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                <span>Manual Labor Entries ({timeSessions.filter(s => !s.start_time).length})</span>
+              </div>
+              {isManualLaborOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-3 p-2">
+            {timeSessions.filter(s => !s.start_time && s.duration > 0).map((entry) => (
+              <Card key={entry.id} className="border-l-4 border-l-blue-500">
+                <CardContent className="p-3">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <p className="font-medium">{entry.description}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {Math.floor(entry.duration / 3600)}h {Math.floor((entry.duration % 3600) / 60)}m
+                      </p>
+                    </div>
+                    {user && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive hover:text-destructive-foreground hover:bg-destructive h-7 w-7 p-0"
+                        onClick={() => {
+                          if (window.confirm('Delete this labor entry?')) {
+                            supabase
+                              .from('job_time_sessions')
+                              .delete()
+                              .eq('id', entry.id)
+                              .then(() => {
+                                toast({
+                                  title: 'Deleted',
+                                  description: 'Labor entry removed'
+                                });
+                              });
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Rate: ${(entry.hourly_rate || job.hourly_rate).toFixed(2)}/hr</span>
+                    <span>Cost: ${((entry.duration / 3600) * (entry.hourly_rate || job.hourly_rate)).toFixed(2)}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            
+            {/* Add Manual Labor Form - Only for authenticated users */}
+            {user && (
+              <div className="border-t pt-2 space-y-2">
+                <Input
+                  placeholder="Labor description (e.g., Estimated engine work)"
+                  value={newManualLaborDesc}
+                  onChange={(e) => setNewManualLaborDesc(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && addManualLabor()}
+                />
+                <div className="flex gap-2">
+                  <div className="flex items-center gap-1 flex-1">
+                    <Input
+                      type="number"
+                      placeholder="Hours"
+                      value={newManualLaborHours}
+                      onChange={(e) => setNewManualLaborHours(e.target.value)}
+                      className="w-20"
+                      min="0"
+                    />
+                    <span className="text-sm">h</span>
+                    <Input
+                      type="number"
+                      placeholder="Min"
+                      value={newManualLaborMinutes}
+                      onChange={(e) => setNewManualLaborMinutes(e.target.value)}
+                      className="w-20"
+                      min="0"
+                      max="59"
+                    />
+                    <span className="text-sm">m</span>
+                  </div>
+                  <Button onClick={addManualLabor} size="sm">
+                    <Plus className="h-3 w-3 mr-1" />
+                    Add Entry
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">For estimates and fixed labor entries</p>
               </div>
             )}
           </CollapsibleContent>
