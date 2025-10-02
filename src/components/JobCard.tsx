@@ -40,6 +40,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   // Input states for adding notes, parts, and time sessions
   const [newNote, setNewNote] = useState("");
   const [newSessionDescription, setNewSessionDescription] = useState("");
+  const [newSessionHours, setNewSessionHours] = useState("");
+  const [newSessionMinutes, setNewSessionMinutes] = useState("");
   const [newPart, setNewPart] = useState({
     name: "",
     quantity: 1,
@@ -75,27 +77,61 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   }, []);
 
   const addTimeSession = () => {
-    if (newSessionDescription.trim()) {
-      createTimeSessionMutation.mutate(
-        { jobId: job.id, description: newSessionDescription.trim(), hourlyRate: job.hourly_rate },
-        {
-          onSuccess: () => {
-            setNewSessionDescription("");
-            toast({
-              title: "Time session created",
-              description: `Created "${newSessionDescription}" time tracking session`,
-            });
-          },
-          onError: () => {
-            toast({
-              title: "Error",
-              description: "Failed to create time session",
-              variant: "destructive",
-            });
-          },
-        }
-      );
+    if (!newSessionDescription.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please enter a description for the time session',
+        variant: 'destructive'
+      });
+      return;
     }
+
+    const hours = parseInt(newSessionHours) || 0;
+    const minutes = parseInt(newSessionMinutes) || 0;
+    
+    if (minutes >= 60) {
+      toast({
+        title: 'Error',
+        description: 'Minutes must be less than 60',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const duration = (hours * 3600) + (minutes * 60);
+
+    createTimeSessionMutation.mutate({
+      jobId: job.id,
+      description: newSessionDescription.trim(),
+      hourlyRate: job.hourly_rate,
+    }, {
+      onSuccess: async (newSession) => {
+        // If duration was specified, update the session with the duration
+        if (duration > 0) {
+          await supabase
+            .from('job_time_sessions')
+            .update({ duration })
+            .eq('id', newSession.id);
+        }
+        
+        setNewSessionDescription("");
+        setNewSessionHours("");
+        setNewSessionMinutes("");
+        toast({
+          title: 'Success',
+          description: duration > 0 
+            ? `Time session added with ${hours}h ${minutes}m` 
+            : 'Time session added successfully',
+        });
+      },
+      onError: () => {
+        toast({
+          title: "Error",
+          description: "Failed to create time session",
+          variant: "destructive",
+        });
+      },
+    });
   };
 
   const completeJob = () => {
@@ -365,19 +401,40 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
             {/* Add Time Session Form - Only for authenticated users */}
             {user && (
               <div className="border-t pt-2 space-y-2">
+                <Input
+                  placeholder="Description (e.g., Engine repair, Hull cleaning)"
+                  value={newSessionDescription}
+                  onChange={(e) => setNewSessionDescription(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && addTimeSession()}
+                />
                 <div className="flex gap-2">
-                  <Input
-                    placeholder="Timer description (e.g., Engine repair, Hull cleaning)"
-                    value={newSessionDescription}
-                    onChange={(e) => setNewSessionDescription(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addTimeSession()}
-                    className="flex-1"
-                  />
+                  <div className="flex items-center gap-1 flex-1">
+                    <Input
+                      type="number"
+                      placeholder="Hours"
+                      value={newSessionHours}
+                      onChange={(e) => setNewSessionHours(e.target.value)}
+                      className="w-20"
+                      min="0"
+                    />
+                    <span className="text-sm">h</span>
+                    <Input
+                      type="number"
+                      placeholder="Min"
+                      value={newSessionMinutes}
+                      onChange={(e) => setNewSessionMinutes(e.target.value)}
+                      className="w-20"
+                      min="0"
+                      max="59"
+                    />
+                    <span className="text-sm">m</span>
+                  </div>
                   <Button onClick={addTimeSession} size="sm">
                     <Plus className="h-3 w-3 mr-1" />
-                    Add
+                    Add Labor
                   </Button>
                 </div>
+                <p className="text-xs text-muted-foreground">Leave hours/minutes blank to use timer later</p>
               </div>
             )}
           </CollapsibleContent>
