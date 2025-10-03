@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Clock, Play, Pause, CheckCircle, Trash2, ChevronDown, ChevronRight, Plus, Package, FileText, Copy, Anchor, Share2, Receipt, Undo2 } from "lucide-react";
+import { Clock, Play, Pause, CheckCircle, Trash2, ChevronDown, ChevronRight, Plus, Package, FileText, Copy, Anchor, Share2, Receipt, Undo2, RotateCcw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useUpdateJob, useDeleteJob, useJobParts, useJobNotes, useAddJobPart, useAddJobNote, useUpdateJobPart, useUpdateJobNote, type Job } from "@/hooks/useJobs";
 import { useTimeSessions, useCreateTimeSession } from "@/hooks/useTimeSessions";
@@ -379,6 +379,26 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
             <Badge variant={job.status === "active" ? "default" : "secondary"}>
               {job.status}
             </Badge>
+            {job.status === "completed" && user && (
+              <Button
+                onClick={() => {
+                  updateJobMutation.mutate({ 
+                    id: job.id, 
+                    updates: { status: "active" } 
+                  });
+                  toast({
+                    title: "Job reactivated",
+                    description: "Job has been moved back to active status.",
+                  });
+                }}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1"
+              >
+                <RotateCcw className="h-3 w-3" />
+                Reopen
+              </Button>
+            )}
             <Button 
               variant="ghost" 
               size="sm" 
