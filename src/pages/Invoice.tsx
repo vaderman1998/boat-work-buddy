@@ -211,7 +211,7 @@ export default function Invoice() {
                 <span>Balance Due:</span>
                 <span>${Math.max(0, totalAmount - job.payment_amount).toFixed(2)}</span>
               </div>
-              {job.paid && (
+              {(totalAmount - job.payment_amount) <= 0 && (
                 <div className="mt-4 p-4 bg-green-50 border-2 border-green-500 rounded-lg text-center">
                   <span className="text-2xl font-bold text-green-700">PAID IN FULL</span>
                 </div>
