@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Clock, Play, Pause, CheckCircle, Trash2, ChevronDown, ChevronRight, Plus, Package, FileText, Copy, Anchor, Share2, Receipt } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useUpdateJob, useDeleteJob, useJobParts, useJobNotes, useAddJobPart, useAddJobNote, useUpdateJobPart, useUpdateJobNote, type Job } from "@/hooks/useJobs";
@@ -67,6 +68,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const [editManualLaborCost, setEditManualLaborCost] = useState("");
   const [isEditingHourlyRate, setIsEditingHourlyRate] = useState(false);
   const [editHourlyRate, setEditHourlyRate] = useState(job.hourly_rate);
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState<string>('');
 
   // Check authentication state
   useEffect(() => {
@@ -471,26 +474,33 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
           </div>
         )}
 
-        {/* Mark as Paid Button - Only show for completed jobs that aren't paid yet */}
-        {job.status === "completed" && !job.paid && user && (
-          <div className="pt-4 border-t">
-            <Button
-              onClick={() => updateJobMutation.mutate({ id: job.id, updates: { paid: true } })}
-              variant="outline"
-              className="w-full flex items-center gap-2 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
-            >
-              <CheckCircle className="h-4 w-4" />
-              Mark as Paid
-            </Button>
-          </div>
-        )}
-
-        {/* Paid Badge - Show when job is paid */}
-        {job.paid && user && (
-          <div className="pt-4 border-t">
-            <div className="w-full p-3 bg-green-50 border border-green-200 rounded-lg text-center">
-              <span className="text-green-700 font-semibold">✓ PAID</span>
-            </div>
+        {/* Payment Section - Only show for completed jobs */}
+        {job.status === "completed" && user && (
+          <div className="pt-4 border-t space-y-2">
+            {job.paid ? (
+              <div className="w-full p-3 bg-green-50 border border-green-200 rounded-lg text-center">
+                <span className="text-green-700 font-semibold">✓ PAID IN FULL</span>
+              </div>
+            ) : (
+              <>
+                {job.payment_amount > 0 && (
+                  <div className="w-full p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-blue-700">Payment Received:</span>
+                      <span className="font-semibold text-blue-700">${job.payment_amount.toFixed(2)}</span>
+                    </div>
+                  </div>
+                )}
+                <Button
+                  onClick={() => setIsPaymentDialogOpen(true)}
+                  variant="outline"
+                  className="w-full flex items-center gap-2 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  {job.payment_amount > 0 ? 'Add Payment' : 'Record Payment'}
+                </Button>
+              </>
+            )}
           </div>
         )}
 
@@ -922,6 +932,70 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
           </CollapsibleContent>
         </Collapsible>
       </CardContent>
+
+      {/* Payment Dialog */}
+      <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Record Payment</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Payment Amount</label>
+              <Input
+                type="number"
+                step="0.01"
+                placeholder="Enter payment amount"
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(e.target.value)}
+              />
+            </div>
+            {job.payment_amount > 0 && (
+              <div className="p-3 bg-muted rounded-lg text-sm">
+                <div className="flex justify-between">
+                  <span>Previously Paid:</span>
+                  <span className="font-semibold">${job.payment_amount.toFixed(2)}</span>
+                </div>
+              </div>
+            )}
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsPaymentDialogOpen(false);
+                  setPaymentAmount('');
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  const amount = parseFloat(paymentAmount);
+                  if (amount > 0) {
+                    const totalCost = partsCost + laborCost;
+                    const newTotal = job.payment_amount + amount;
+                    updateJobMutation.mutate({ 
+                      id: job.id, 
+                      updates: { 
+                        payment_amount: newTotal,
+                        paid: newTotal >= totalCost
+                      } 
+                    });
+                    setIsPaymentDialogOpen(false);
+                    setPaymentAmount('');
+                    toast({
+                      title: "Payment recorded",
+                      description: `$${amount.toFixed(2)} has been added to the job.`,
+                    });
+                  }
+                }}
+              >
+                Record Payment
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };

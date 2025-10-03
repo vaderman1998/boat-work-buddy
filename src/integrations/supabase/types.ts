@@ -125,6 +125,7 @@ export type Database = {
           hourly_rate: number
           id: string
           paid: boolean
+          payment_amount: number
           status: string
           total_hours: number
           updated_at: string
@@ -139,6 +140,7 @@ export type Database = {
           hourly_rate?: number
           id?: string
           paid?: boolean
+          payment_amount?: number
           status?: string
           total_hours?: number
           updated_at?: string
@@ -153,6 +155,7 @@ export type Database = {
           hourly_rate?: number
           id?: string
           paid?: boolean
+          payment_amount?: number
           status?: string
           total_hours?: number
           updated_at?: string

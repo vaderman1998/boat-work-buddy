@@ -201,19 +201,19 @@ export default function Invoice() {
                 <span>Subtotal:</span>
                 <span>${totalAmount.toFixed(2)}</span>
               </div>
-              {job.paid && (
+              {job.payment_amount > 0 && (
                 <div className="flex justify-between py-2 text-green-600">
                   <span>Payment Received:</span>
-                  <span>-${totalAmount.toFixed(2)}</span>
+                  <span>-${job.payment_amount.toFixed(2)}</span>
                 </div>
               )}
               <div className="flex justify-between py-2 border-t text-lg font-bold">
                 <span>Balance Due:</span>
-                <span>{job.paid ? '$0.00' : `$${totalAmount.toFixed(2)}`}</span>
+                <span>${Math.max(0, totalAmount - job.payment_amount).toFixed(2)}</span>
               </div>
               {job.paid && (
                 <div className="mt-4 p-4 bg-green-50 border-2 border-green-500 rounded-lg text-center">
-                  <span className="text-2xl font-bold text-green-700">PAID</span>
+                  <span className="text-2xl font-bold text-green-700">PAID IN FULL</span>
                 </div>
               )}
             </div>
