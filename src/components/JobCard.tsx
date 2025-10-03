@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Clock, Play, Pause, CheckCircle, Trash2, ChevronDown, ChevronRight, Plus, Package, FileText, Copy, Anchor, Share2, Receipt } from "lucide-react";
+import { Clock, Play, Pause, CheckCircle, Trash2, ChevronDown, ChevronRight, Plus, Package, FileText, Copy, Anchor, Share2, Receipt, Undo2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useUpdateJob, useDeleteJob, useJobParts, useJobNotes, useAddJobPart, useAddJobNote, useUpdateJobPart, useUpdateJobNote, type Job } from "@/hooks/useJobs";
 import { useTimeSessions, useCreateTimeSession } from "@/hooks/useTimeSessions";
@@ -478,9 +478,31 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
         {job.status === "completed" && user && (
           <div className="pt-4 border-t space-y-2">
             {job.paid ? (
-              <div className="w-full p-3 bg-green-50 border border-green-200 rounded-lg text-center">
-                <span className="text-green-700 font-semibold">✓ PAID IN FULL</span>
-              </div>
+              <>
+                <div className="w-full p-3 bg-green-50 border border-green-200 rounded-lg text-center">
+                  <span className="text-green-700 font-semibold">✓ PAID IN FULL</span>
+                </div>
+                <Button
+                  onClick={() => {
+                    updateJobMutation.mutate({ 
+                      id: job.id, 
+                      updates: { 
+                        payment_amount: 0,
+                        paid: false
+                      } 
+                    });
+                    toast({
+                      title: "Payment reset",
+                      description: "Payment status has been reset.",
+                    });
+                  }}
+                  variant="outline"
+                  className="w-full flex items-center gap-2 text-muted-foreground hover:text-foreground"
+                >
+                  <Undo2 className="h-4 w-4" />
+                  Reset Payment
+                </Button>
+              </>
             ) : (
               <>
                 {job.payment_amount > 0 && (
@@ -491,14 +513,37 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
                     </div>
                   </div>
                 )}
-                <Button
-                  onClick={() => setIsPaymentDialogOpen(true)}
-                  variant="outline"
-                  className="w-full flex items-center gap-2 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
-                >
-                  <CheckCircle className="h-4 w-4" />
-                  {job.payment_amount > 0 ? 'Add Payment' : 'Record Payment'}
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setIsPaymentDialogOpen(true)}
+                    variant="outline"
+                    className="flex-1 flex items-center gap-2 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                    {job.payment_amount > 0 ? 'Add Payment' : 'Record Payment'}
+                  </Button>
+                  {job.payment_amount > 0 && (
+                    <Button
+                      onClick={() => {
+                        updateJobMutation.mutate({ 
+                          id: job.id, 
+                          updates: { 
+                            payment_amount: 0,
+                            paid: false
+                          } 
+                        });
+                        toast({
+                          title: "Payment reset",
+                          description: "All payments have been cleared.",
+                        });
+                      }}
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <Undo2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </>
             )}
           </div>
