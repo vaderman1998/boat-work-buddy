@@ -14,6 +14,7 @@ export interface Job {
   created_at: string;
   updated_at: string;
   customer_token: string;
+  paid: boolean;
 }
 
 export interface JobPart {
@@ -83,7 +84,7 @@ export const useCreateJob = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (newJob: Omit<Job, 'id' | 'created_at' | 'updated_at' | 'customer_token'>) => {
+    mutationFn: async (newJob: Omit<Job, 'id' | 'created_at' | 'updated_at' | 'customer_token' | 'paid'>) => {
       const { data, error } = await supabase
         .from('jobs')
         .insert([newJob])

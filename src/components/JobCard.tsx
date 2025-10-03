@@ -471,6 +471,29 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
           </div>
         )}
 
+        {/* Mark as Paid Button - Only show for completed jobs that aren't paid yet */}
+        {job.status === "completed" && !job.paid && user && (
+          <div className="pt-4 border-t">
+            <Button
+              onClick={() => updateJobMutation.mutate({ id: job.id, updates: { paid: true } })}
+              variant="outline"
+              className="w-full flex items-center gap-2 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+            >
+              <CheckCircle className="h-4 w-4" />
+              Mark as Paid
+            </Button>
+          </div>
+        )}
+
+        {/* Paid Badge - Show when job is paid */}
+        {job.paid && user && (
+          <div className="pt-4 border-t">
+            <div className="w-full p-3 bg-green-50 border border-green-200 rounded-lg text-center">
+              <span className="text-green-700 font-semibold">✓ PAID</span>
+            </div>
+          </div>
+        )}
+
         {/* Time Sessions Section */}
         <Collapsible open={isTimeSessionsOpen} onOpenChange={setIsTimeSessionsOpen}>
           <CollapsibleTrigger asChild>

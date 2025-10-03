@@ -124,6 +124,7 @@ export type Database = {
           description: string
           hourly_rate: number
           id: string
+          paid: boolean
           status: string
           total_hours: number
           updated_at: string
@@ -137,6 +138,7 @@ export type Database = {
           description: string
           hourly_rate?: number
           id?: string
+          paid?: boolean
           status?: string
           total_hours?: number
           updated_at?: string
@@ -150,6 +152,7 @@ export type Database = {
           description?: string
           hourly_rate?: number
           id?: string
+          paid?: boolean
           status?: string
           total_hours?: number
           updated_at?: string
