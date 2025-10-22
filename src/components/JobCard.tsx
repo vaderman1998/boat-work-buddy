@@ -66,6 +66,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const [editPartData, setEditPartData] = useState({ name: "", quantity: 1, cost_per_unit: 0 });
   const [editNoteContent, setEditNoteContent] = useState("");
   const [editManualLaborCost, setEditManualLaborCost] = useState("");
+  const [editManualLaborDesc, setEditManualLaborDesc] = useState("");
   const [isEditingHourlyRate, setIsEditingHourlyRate] = useState(false);
   const [editHourlyRate, setEditHourlyRate] = useState(job.hourly_rate);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
@@ -335,30 +336,34 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
     setEditingManualLaborId(entry.id);
     const currentCost = ((entry.duration / 3600) * (entry.hourly_rate || job.hourly_rate));
     setEditManualLaborCost(currentCost.toFixed(2));
+    setEditManualLaborDesc(entry.description);
   };
 
   const cancelEditingManualLabor = () => {
     setEditingManualLaborId(null);
     setEditManualLaborCost("");
+    setEditManualLaborDesc("");
   };
 
   const saveEditedManualLabor = async (id: string) => {
     const newCost = parseFloat(editManualLaborCost);
-    if (newCost > 0) {
+    if (newCost > 0 && editManualLaborDesc.trim()) {
       // Update with 1 hour duration and custom rate equal to the cost
       await supabase
         .from('job_time_sessions')
         .update({ 
           duration: 3600, // 1 hour
-          hourly_rate: newCost // Rate equals cost since duration is 1 hour
+          hourly_rate: newCost, // Rate equals cost since duration is 1 hour
+          description: editManualLaborDesc.trim()
         })
         .eq('id', id);
       
       setEditingManualLaborId(null);
       setEditManualLaborCost("");
+      setEditManualLaborDesc("");
       toast({
         title: 'Success',
-        description: 'Manual labor cost updated',
+        description: 'Manual labor entry updated',
       });
     }
   };
@@ -648,7 +653,14 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
                 <CardContent className="p-3">
                   {editingManualLaborId === entry.id ? (
                     <div className="space-y-2">
-                      <p className="font-medium text-sm">{entry.description}</p>
+                      <div>
+                        <Label className="text-xs">Description</Label>
+                        <Textarea
+                          value={editManualLaborDesc}
+                          onChange={(e) => setEditManualLaborDesc(e.target.value)}
+                          className="min-h-[60px]"
+                        />
+                      </div>
                       <div className="flex gap-2 items-center">
                         <span className="text-sm font-medium whitespace-nowrap">Cost:</span>
                         <Input
