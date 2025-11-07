@@ -4,20 +4,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Clock, DollarSign, Wrench, Calendar, Anchor, LogIn, LogOut } from "lucide-react";
+import { Clock, DollarSign, Wrench, Calendar, Anchor, LogIn, LogOut, Eye, X } from "lucide-react";
 import { JobCard } from "@/components/JobCard";
 import { AddJobDialog } from "@/components/AddJobDialog";
 import { useJobs } from "@/hooks/useJobs";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { useToast } from "@/components/ui/use-toast";
+import { useDemoMode } from "@/contexts/DemoContext";
+import { mockJobs } from "@/data/mockData";
 import backgroundImage from "@/assets/marina-workshop.jpg";
 
 const Index = () => {
-  const { data: jobs = [], isLoading, error } = useJobs();
+  const { data: realJobs = [], isLoading, error } = useJobs();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const { toast } = useToast();
+  const { isDemoMode, setDemoMode } = useDemoMode();
+  
+  const jobs = isDemoMode ? mockJobs : realJobs;
 
   useEffect(() => {
     // Set up auth state listener
@@ -53,6 +58,22 @@ const Index = () => {
     }
   };
 
+  const handleEnterDemo = () => {
+    setDemoMode(true);
+    toast({
+      title: "Demo Mode",
+      description: "Exploring with sample data. Changes won't be saved.",
+    });
+  };
+
+  const handleExitDemo = () => {
+    setDemoMode(false);
+    toast({
+      title: "Demo Mode Exited",
+      description: "Back to live data.",
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -75,8 +96,8 @@ const Index = () => {
     );
   }
 
-  // If user is not authenticated, show login page
-  if (!user) {
+  // If user is not authenticated and not in demo mode, show login page
+  if (!user && !isDemoMode) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
@@ -90,17 +111,38 @@ const Index = () => {
           </div>
 
           <Card>
-            <CardContent className="p-6 text-center">
-              <h2 className="text-xl font-semibold mb-4">Authentication Required</h2>
-              <p className="text-muted-foreground mb-6">
-                Please sign in to access the job management system.
-              </p>
-              <Link to="/auth">
-                <Button className="w-full">
-                  <LogIn className="h-4 w-4 mr-2" />
-                  Go to Login
+            <CardContent className="p-6 text-center space-y-4">
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Authentication Required</h2>
+                <p className="text-muted-foreground mb-6">
+                  Please sign in to access the job management system.
+                </p>
+                <Link to="/auth">
+                  <Button className="w-full">
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Go to Login
+                  </Button>
+                </Link>
+              </div>
+              
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">Or</span>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Explore the system with sample data
+                </p>
+                <Button onClick={handleEnterDemo} variant="outline" className="w-full">
+                  <Eye className="h-4 w-4 mr-2" />
+                  Try Demo Mode
                 </Button>
-              </Link>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -120,6 +162,24 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-maritime-light">
+      {/* Demo Mode Banner */}
+      {isDemoMode && (
+        <div className="bg-amber-500 text-white py-2 px-4 text-center relative">
+          <div className="flex items-center justify-center gap-2">
+            <Eye className="h-4 w-4" />
+            <span className="font-medium">Demo Mode - Changes won't be saved</span>
+          </div>
+          <Button
+            onClick={handleExitDemo}
+            variant="ghost"
+            size="sm"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-white hover:text-white hover:bg-amber-600"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+      
       {/* Header */}
       <div className="relative h-64 overflow-hidden">
         <img 
@@ -139,13 +199,19 @@ const Index = () => {
         </div>
         
         {/* Auth Controls */}
-        <div className="absolute top-4 right-4">
+        <div className="absolute top-4 right-4 flex gap-2">
+          {isDemoMode && (
+            <Button onClick={handleExitDemo} variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+              <X className="h-4 w-4 mr-2" />
+              Exit Demo
+            </Button>
+          )}
           {user ? (
             <Button onClick={handleSignOut} variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out
             </Button>
-          ) : (
+          ) : !isDemoMode && (
             <Link to="/auth">
               <Button variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
                 <LogIn className="h-4 w-4 mr-2" />
@@ -203,7 +269,7 @@ const Index = () => {
         {/* Main Content */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-primary">Job Management</h2>
-          <AddJobDialog />
+          {!isDemoMode && <AddJobDialog />}
         </div>
 
         <Tabs defaultValue="active" className="w-full">
