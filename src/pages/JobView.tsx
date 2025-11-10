@@ -149,38 +149,6 @@ export default function JobView() {
               <p className="text-muted-foreground">{job.description}</p>
             </div>
 
-            {/* Job Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                <Clock className="h-5 w-5 text-maritime-medium" />
-                <div>
-                  <div className="font-medium">{job.total_hours.toFixed(1)} Hours</div>
-                  <div className="text-sm text-muted-foreground">Time Logged</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                <DollarSign className="h-5 w-5 text-gold" />
-                <div>
-                  <div className="font-medium">${job.hourly_rate}/hr</div>
-                  <div className="text-sm text-muted-foreground">Labor Rate</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                <DollarSign className="h-5 w-5 text-maritime-medium" />
-                <div>
-                  <div className="font-medium">${partsCost.toFixed(2)}</div>
-                  <div className="text-sm text-muted-foreground">Parts Cost</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                <DollarSign className="h-5 w-5 text-gold" />
-                <div>
-                  <div className="font-medium">${totalCost.toFixed(2)}</div>
-                  <div className="text-sm text-muted-foreground">Current Total</div>
-                </div>
-              </div>
-            </div>
-
             {/* Creation Date */}
             <div className="text-sm text-muted-foreground">
               Job started: {formatDate(job.created_at)}
@@ -271,19 +239,9 @@ export default function JobView() {
                         <h4 className="font-semibold">{entry.description}</h4>
                         <Badge variant="secondary">Estimate</Badge>
                       </div>
-                      <div className="grid grid-cols-3 gap-4 text-sm">
-                        <div>
-                          <p className="text-muted-foreground">Duration</p>
-                          <p className="font-medium">{hours}h {minutes}m</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Rate</p>
-                          <p className="font-medium">${(entry.hourly_rate || job?.hourly_rate || 75).toFixed(2)}/hr</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Cost</p>
-                          <p className="font-medium">${cost.toFixed(2)}</p>
-                        </div>
+                      <div className="text-sm">
+                        <p className="text-muted-foreground">Duration</p>
+                        <p className="font-medium">{hours}h {minutes}m</p>
                       </div>
                     </div>
                   );
@@ -305,24 +263,13 @@ export default function JobView() {
             <CardContent>
               <div className="space-y-4">
                 {parts.map((part) => (
-                  <div key={part.id} className="flex justify-between items-center p-4 bg-muted rounded-lg">
-                    <div>
-                      <h4 className="font-semibold">{part.name}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Quantity: {part.quantity} × ${part.cost_per_unit.toFixed(2)} each
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold">${(part.quantity * part.cost_per_unit).toFixed(2)}</p>
-                    </div>
+                  <div key={part.id} className="p-4 bg-muted rounded-lg">
+                    <h4 className="font-semibold">{part.name}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Quantity: {part.quantity}
+                    </p>
                   </div>
                 ))}
-                <div className="border-t pt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold">Total Parts Cost:</span>
-                    <span className="text-lg font-bold">${partsCost.toFixed(2)}</span>
-                  </div>
-                </div>
               </div>
             </CardContent>
           </Card>
