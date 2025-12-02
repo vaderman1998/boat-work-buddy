@@ -194,10 +194,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      calculate_job_total_hours: {
-        Args: { job_uuid: string }
-        Returns: number
-      }
+      calculate_job_total_hours: { Args: { job_uuid: string }; Returns: number }
     }
     Enums: {
       [_ in never]: never
