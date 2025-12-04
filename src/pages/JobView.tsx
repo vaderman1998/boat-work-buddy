@@ -149,6 +149,26 @@ export default function JobView() {
               <p className="text-muted-foreground">{job.description}</p>
             </div>
 
+            {/* Job Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-3 bg-muted rounded-lg text-center">
+                <p className="text-sm text-muted-foreground">Time Logged</p>
+                <p className="font-semibold">{job.total_hours.toFixed(2)} hrs</p>
+              </div>
+              <div className="p-3 bg-muted rounded-lg text-center">
+                <p className="text-sm text-muted-foreground">Labor Rate</p>
+                <p className="font-semibold">${job.hourly_rate}/hr</p>
+              </div>
+              <div className="p-3 bg-muted rounded-lg text-center">
+                <p className="text-sm text-muted-foreground">Parts Cost</p>
+                <p className="font-semibold">${partsCost.toFixed(2)}</p>
+              </div>
+              <div className="p-3 bg-muted rounded-lg text-center">
+                <p className="text-sm text-muted-foreground">Current Total</p>
+                <p className="font-semibold text-maritime-medium">${totalCost.toFixed(2)}</p>
+              </div>
+            </div>
+
             {/* Creation Date */}
             <div className="text-sm text-muted-foreground">
               Job started: {formatDate(job.created_at)}
@@ -239,9 +259,15 @@ export default function JobView() {
                         <h4 className="font-semibold">{entry.description}</h4>
                         <Badge variant="secondary">Estimate</Badge>
                       </div>
-                      <div className="text-sm">
-                        <p className="text-muted-foreground">Duration</p>
-                        <p className="font-medium">{hours}h {minutes}m</p>
+                      <div className="flex justify-between text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Duration</p>
+                          <p className="font-medium">{hours}h {minutes}m</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-muted-foreground">Rate: ${entry.hourly_rate || job?.hourly_rate || 75}/hr</p>
+                          <p className="font-medium">${cost.toFixed(2)}</p>
+                        </div>
                       </div>
                     </div>
                   );
@@ -263,13 +289,20 @@ export default function JobView() {
             <CardContent>
               <div className="space-y-4">
                 {parts.map((part) => (
-                  <div key={part.id} className="p-4 bg-muted rounded-lg">
-                    <h4 className="font-semibold">{part.name}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Quantity: {part.quantity}
-                    </p>
+                  <div key={part.id} className="p-4 bg-muted rounded-lg flex justify-between items-center">
+                    <div>
+                      <h4 className="font-semibold">{part.name}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Quantity: {part.quantity} × ${part.cost_per_unit.toFixed(2)}
+                      </p>
+                    </div>
+                    <p className="font-semibold">${(part.quantity * part.cost_per_unit).toFixed(2)}</p>
                   </div>
                 ))}
+                <div className="pt-2 border-t flex justify-between font-semibold">
+                  <span>Total Parts Cost</span>
+                  <span>${partsCost.toFixed(2)}</span>
+                </div>
               </div>
             </CardContent>
           </Card>
