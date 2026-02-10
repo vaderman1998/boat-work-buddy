@@ -169,6 +169,33 @@ export default function JobView() {
               </div>
             </div>
 
+            {/* Payment Summary */}
+            {(job.payment_amount > 0 || job.paid) && (
+              <div className="p-4 rounded-lg border-2 border-green-500/30 bg-green-50/50">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Total</span>
+                    <span className="font-medium">${totalCost.toFixed(2)}</span>
+                  </div>
+                  {job.payment_amount > 0 && (
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span>Payment Applied</span>
+                      <span>-${job.payment_amount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-bold border-t pt-2">
+                    <span>Balance Due</span>
+                    <span>${Math.max(0, totalCost - job.payment_amount).toFixed(2)}</span>
+                  </div>
+                  {(totalCost - job.payment_amount) <= 0 && (
+                    <div className="mt-2 p-3 bg-green-100 border border-green-500 rounded-lg text-center">
+                      <span className="text-lg font-bold text-green-700">PAID IN FULL</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Creation Date */}
             <div className="text-sm text-muted-foreground">
               Job started: {formatDate(job.created_at)}
