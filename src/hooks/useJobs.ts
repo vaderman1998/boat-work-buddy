@@ -16,6 +16,7 @@ export interface Job {
   customer_token: string;
   paid: boolean;
   payment_amount: number;
+  tax_rate: number;
 }
 
 export interface JobPart {

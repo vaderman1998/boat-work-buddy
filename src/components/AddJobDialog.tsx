@@ -15,6 +15,7 @@ export const AddJobDialog = () => {
     boat_type: "",
     description: "",
     hourly_rate: 75,
+    tax_rate: 0,
   });
 
   const createJobMutation = useCreateJob();
@@ -32,6 +33,7 @@ export const AddJobDialog = () => {
       boat_type: "",
       description: "",
       hourly_rate: 75,
+      tax_rate: 0,
     });
     setOpen(false);
   };
@@ -70,7 +72,7 @@ export const AddJobDialog = () => {
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="boatType">Boat Type</Label>
               <Input
@@ -89,6 +91,17 @@ export const AddJobDialog = () => {
                 value={formData.hourly_rate}
                 onChange={(e) => setFormData(prev => ({ ...prev, hourly_rate: parseFloat(e.target.value) || 0 }))}
                 required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="taxRate">Tax Rate (%)</Label>
+              <Input
+                id="taxRate"
+                type="number"
+                step="0.1"
+                value={formData.tax_rate}
+                onChange={(e) => setFormData(prev => ({ ...prev, tax_rate: parseFloat(e.target.value) || 0 }))}
+                placeholder="e.g., 7"
               />
             </div>
           </div>

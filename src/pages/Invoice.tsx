@@ -63,10 +63,13 @@ export default function Invoice() {
   // Calculate costs
   const partsCost = parts.reduce((total, part) => total + (part.quantity * part.cost_per_unit), 0);
   const laborCost = timeSessions.reduce((total, session) => {
-    const hours = session.duration / 3600; // Convert seconds to hours
+    const hours = session.duration / 3600;
     return total + (hours * session.hourly_rate);
   }, 0);
-  const totalAmount = partsCost + laborCost;
+  const subtotal = partsCost + laborCost;
+  const taxRate = job.tax_rate || 0;
+  const taxAmount = subtotal * (taxRate / 100);
+  const totalAmount = subtotal + taxAmount;
 
   // Generate invoice number based on job ID and date
   const invoiceNumber = `INV-${job.id.slice(-6).toUpperCase()}-${new Date().getFullYear()}`;
@@ -199,6 +202,16 @@ export default function Invoice() {
             <div className="space-y-2">
               <div className="flex justify-between py-2 border-t">
                 <span>Subtotal:</span>
+                <span>${subtotal.toFixed(2)}</span>
+              </div>
+              {taxRate > 0 && (
+                <div className="flex justify-between py-2">
+                  <span>Tax ({taxRate}%):</span>
+                  <span>${taxAmount.toFixed(2)}</span>
+                </div>
+              )}
+              <div className="flex justify-between py-2 border-t font-bold">
+                <span>Total:</span>
                 <span>${totalAmount.toFixed(2)}</span>
               </div>
               {job.payment_amount > 0 && (
