@@ -127,6 +127,7 @@ export type Database = {
           paid: boolean
           payment_amount: number
           status: string
+          tax_rate: number
           total_hours: number
           updated_at: string
         }
@@ -142,6 +143,7 @@ export type Database = {
           paid?: boolean
           payment_amount?: number
           status?: string
+          tax_rate?: number
           total_hours?: number
           updated_at?: string
         }
@@ -157,6 +159,7 @@ export type Database = {
           paid?: boolean
           payment_amount?: number
           status?: string
+          tax_rate?: number
           total_hours?: number
           updated_at?: string
         }

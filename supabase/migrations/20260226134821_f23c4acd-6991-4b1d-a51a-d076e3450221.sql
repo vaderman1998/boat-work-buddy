@@ -1,0 +1,1 @@
+ALTER TABLE public.jobs ADD COLUMN tax_rate numeric NOT NULL DEFAULT 0;
