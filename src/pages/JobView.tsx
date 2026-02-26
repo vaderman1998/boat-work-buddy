@@ -82,7 +82,10 @@ export default function JobView() {
   // Calculate costs
   const partsCost = parts.reduce((total, part) => total + (part.quantity * part.cost_per_unit), 0);
   const laborCost = job.total_hours * job.hourly_rate;
-  const totalCost = partsCost + laborCost;
+  const subtotal = partsCost + laborCost;
+  const taxRate = job.tax_rate || 0;
+  const taxAmount = subtotal * (taxRate / 100);
+  const totalCost = subtotal + taxAmount;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-maritime-light">
@@ -163,6 +166,12 @@ export default function JobView() {
                 <p className="text-sm text-muted-foreground">Parts Cost</p>
                 <p className="font-semibold">${partsCost.toFixed(2)}</p>
               </div>
+              {taxRate > 0 && (
+                <div className="p-3 bg-muted rounded-lg text-center">
+                  <p className="text-sm text-muted-foreground">Tax ({taxRate}%)</p>
+                  <p className="font-semibold">${taxAmount.toFixed(2)}</p>
+                </div>
+              )}
               <div className="p-3 bg-muted rounded-lg text-center">
                 <p className="text-sm text-muted-foreground">Current Total</p>
                 <p className="font-semibold text-maritime-medium">${totalCost.toFixed(2)}</p>
