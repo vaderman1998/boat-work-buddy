@@ -69,6 +69,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const [editManualLaborDesc, setEditManualLaborDesc] = useState("");
   const [isEditingHourlyRate, setIsEditingHourlyRate] = useState(false);
   const [editHourlyRate, setEditHourlyRate] = useState(job.hourly_rate);
+  const [isEditingTaxRate, setIsEditingTaxRate] = useState(false);
+  const [editTaxRate, setEditTaxRate] = useState(job.tax_rate || 0);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState<string>('');
 
@@ -232,7 +234,10 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   // Calculate costs
   const partsCost = parts.reduce((total, part) => total + (part.quantity * part.cost_per_unit), 0);
   const laborCost = job.total_hours * job.hourly_rate;
-  const totalCost = partsCost + laborCost;
+  const subtotal = partsCost + laborCost;
+  const taxRate = job.tax_rate || 0;
+  const taxAmount = subtotal * (taxRate / 100);
+  const totalCost = subtotal + taxAmount;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -472,9 +477,49 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
             )}
           </div>
           <div>
+            <span className="font-medium">Tax Rate:</span>
+            {isEditingTaxRate && user ? (
+              <div className="flex gap-1 items-center mt-1">
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={editTaxRate}
+                  onChange={(e) => setEditTaxRate(parseFloat(e.target.value) || 0)}
+                  className="h-7 w-24"
+                />
+                <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => { setIsEditingTaxRate(false); setEditTaxRate(job.tax_rate || 0); }}>
+                  Cancel
+                </Button>
+                <Button size="sm" className="h-7 px-2" onClick={() => {
+                  updateJobMutation.mutate({ id: job.id, updates: { tax_rate: editTaxRate } }, {
+                    onSuccess: () => setIsEditingTaxRate(false)
+                  });
+                }}>
+                  Save
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <p>{taxRate}%</p>
+                {user && (
+                  <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => { setIsEditingTaxRate(true); setEditTaxRate(job.tax_rate || 0); }}>
+                    Edit
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+          <div>
             <span className="font-medium">Parts Cost:</span>
             <p>${partsCost.toFixed(2)}</p>
           </div>
+          {taxRate > 0 && (
+            <div>
+              <span className="font-medium">Tax ({taxRate}%):</span>
+              <p>${taxAmount.toFixed(2)}</p>
+            </div>
+          )}
           <div>
             <span className="font-medium">Total Cost:</span>
             <p className="font-bold">${totalCost.toFixed(2)}</p>
