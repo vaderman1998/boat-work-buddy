@@ -104,7 +104,7 @@ const Index = () => {
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-4">
               <Anchor className="h-12 w-12 text-gold" />
-              <h1 className="text-3xl font-bold text-white">B & A Engine Worx</h1>
+              <h1 className="text-3xl font-bold text-white">B & A Engine Worx LLC</h1>
             </div>
             <p className="text-slate-300">Professional Boat Engine Service & Repair</p>
             <p className="text-slate-400 mt-2">Admin Portal</p>
@@ -192,7 +192,7 @@ const Index = () => {
             <div className="text-center text-white">
               <div className="flex items-center justify-center gap-3 mb-4">
                 <Anchor className="h-12 w-12 text-gold" />
-                <h1 className="text-4xl font-bold">B & A Engine Worx</h1>
+                <h1 className="text-4xl font-bold">B & A Engine Worx LLC</h1>
               </div>
               <p className="text-xl opacity-90">Professional Boat Engine Service & Repair</p>
             </div>

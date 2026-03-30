@@ -100,7 +100,7 @@ export default function Invoice() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <Anchor className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl font-bold text-primary">B & A Engine Worx</h1>
+              <h1 className="text-3xl font-bold text-primary">B & A Engine Worx LLC</h1>
             </div>
             <p className="text-muted-foreground">Professional Boat Engine Service & Repair</p>
             <div className="mt-4 text-sm text-muted-foreground">
@@ -249,7 +249,7 @@ export default function Invoice() {
 
         {/* Footer */}
         <div className="text-center mt-8 pt-6 border-t text-sm text-muted-foreground">
-          <p>Thank you for choosing B & A Engine Worx for your marine engine needs!</p>
+          <p>Thank you for choosing B & A Engine Worx LLC for your marine engine needs!</p>
           <p className="mt-1">For questions about this invoice, please contact us at sahall32@bellsouth.net</p>
         </div>
       </div>
