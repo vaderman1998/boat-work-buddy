@@ -59,7 +59,7 @@ export default function JobView() {
             <Anchor className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
             <p className="text-muted-foreground mb-4">
-              This job link is invalid or has expired. Please contact B & A Engine Worx for a valid job link.
+              This job link is invalid or has expired. Please contact B & A Engine Worx LLC for a valid job link.
             </p>
           </Card>
         </div>
@@ -101,7 +101,7 @@ export default function JobView() {
           <div className="text-center text-white">
             <div className="flex items-center justify-center gap-3 mb-2">
               <Anchor className="h-8 w-8 text-gold" />
-              <h1 className="text-2xl font-bold">B & A Engine Worx</h1>
+              <h1 className="text-2xl font-bold">B & A Engine Worx LLC</h1>
             </div>
             <p className="text-lg opacity-90">Job Status Update</p>
           </div>
@@ -373,7 +373,7 @@ export default function JobView() {
         {/* Footer */}
         <div className="text-center mt-8 p-4 text-sm text-muted-foreground">
           <p>This page updates automatically as work progresses on your boat.</p>
-          <p className="mt-1">For questions, please contact B & A Engine Worx directly.</p>
+          <p className="mt-1">For questions, please contact B & A Engine Worx LLC directly.</p>
         </div>
       </div>
     </div>
