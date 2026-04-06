@@ -36,6 +36,8 @@ export const AddJobDialog = () => {
       description: "",
       hourly_rate: 75,
       tax_rate: 0,
+      customer_address: "",
+      customer_phone: "",
     });
     setOpen(false);
   };
