@@ -122,6 +122,8 @@ export default function Invoice() {
           <h3 className="text-lg font-semibold mb-2">Bill To:</h3>
           <div className="bg-muted p-4 rounded-lg">
             <p className="font-medium">{job.customer_name}</p>
+            {job.customer_address && <p className="text-muted-foreground">{job.customer_address}</p>}
+            {job.customer_phone && <p className="text-muted-foreground">{job.customer_phone}</p>}
             <p className="text-muted-foreground">Boat: {job.boat_name} ({job.boat_type})</p>
           </div>
         </div>
