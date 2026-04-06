@@ -71,6 +71,9 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const [editHourlyRate, setEditHourlyRate] = useState(job.hourly_rate);
   const [isEditingTaxRate, setIsEditingTaxRate] = useState(false);
   const [editTaxRate, setEditTaxRate] = useState(job.tax_rate || 0);
+  const [isEditingContact, setIsEditingContact] = useState(false);
+  const [editAddress, setEditAddress] = useState(job.customer_address || "");
+  const [editPhone, setEditPhone] = useState(job.customer_phone || "");
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState<string>('');
 
@@ -435,6 +438,59 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
 
       <CardContent className="space-y-4">
         <p className="text-sm">{job.description}</p>
+
+        {/* Customer Contact Info */}
+        <div className="text-sm">
+          {isEditingContact && user ? (
+            <div className="space-y-2 p-2 border rounded-lg">
+              <div className="space-y-1">
+                <Label className="text-xs">Phone</Label>
+                <Input
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                  placeholder="(555) 555-1234"
+                  className="h-7 text-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Address</Label>
+                <Input
+                  value={editAddress}
+                  onChange={(e) => setEditAddress(e.target.value)}
+                  placeholder="123 Main St, City, State"
+                  className="h-7 text-sm"
+                />
+              </div>
+              <div className="flex gap-1">
+                <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => {
+                  setIsEditingContact(false);
+                  setEditPhone(job.customer_phone || "");
+                  setEditAddress(job.customer_address || "");
+                }}>Cancel</Button>
+                <Button size="sm" className="h-6 px-2 text-xs" onClick={() => {
+                  updateJobMutation.mutate({
+                    id: job.id,
+                    updates: { customer_phone: editPhone, customer_address: editAddress }
+                  }, { onSuccess: () => setIsEditingContact(false) });
+                }}>Save</Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground">
+                {job.customer_phone && <span>📞 {job.customer_phone}</span>}
+                {job.customer_phone && job.customer_address && <span> • </span>}
+                {job.customer_address && <span>📍 {job.customer_address}</span>}
+                {!job.customer_phone && !job.customer_address && <span className="italic">No contact info</span>}
+              </span>
+              {user && (
+                <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => setIsEditingContact(true)}>
+                  Edit
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
         
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
