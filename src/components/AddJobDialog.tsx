@@ -18,6 +18,8 @@ export const AddJobDialog = () => {
     tax_rate: 0,
     customer_address: "",
     customer_phone: "",
+    engine_make_model: "",
+    engine_serial: "",
   });
 
   const createJobMutation = useCreateJob();
@@ -38,6 +40,8 @@ export const AddJobDialog = () => {
       tax_rate: 0,
       customer_address: "",
       customer_phone: "",
+      engine_make_model: "",
+      engine_serial: "",
     });
     setOpen(false);
   };
@@ -95,6 +99,27 @@ export const AddJobDialog = () => {
                 value={formData.boat_name}
                 onChange={(e) => setFormData(prev => ({ ...prev, boat_name: e.target.value }))}
                 required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="engineMakeModel">Engine Make/Model</Label>
+              <Input
+                id="engineMakeModel"
+                value={formData.engine_make_model}
+                onChange={(e) => setFormData(prev => ({ ...prev, engine_make_model: e.target.value }))}
+                placeholder="e.g., Mercury 150HP"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="engineSerial">Serial Number</Label>
+              <Input
+                id="engineSerial"
+                value={formData.engine_serial}
+                onChange={(e) => setFormData(prev => ({ ...prev, engine_serial: e.target.value }))}
+                placeholder="e.g., 1B234567"
               />
             </div>
           </div>
