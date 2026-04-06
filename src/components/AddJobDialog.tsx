@@ -66,6 +66,29 @@ export const AddJobDialog = () => {
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="customerPhone">Phone Number</Label>
+              <Input
+                id="customerPhone"
+                type="tel"
+                value={formData.customer_phone}
+                onChange={(e) => setFormData(prev => ({ ...prev, customer_phone: e.target.value }))}
+                placeholder="(555) 555-1234"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="customerAddress">Address</Label>
+            <Input
+              id="customerAddress"
+              value={formData.customer_address}
+              onChange={(e) => setFormData(prev => ({ ...prev, customer_address: e.target.value }))}
+              placeholder="123 Main St, City, State"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
               <Label htmlFor="boatName">Boat Name</Label>
               <Input
                 id="boatName"
@@ -74,7 +97,6 @@ export const AddJobDialog = () => {
                 required
               />
             </div>
-          </div>
           
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
