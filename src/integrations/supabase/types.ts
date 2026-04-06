@@ -119,7 +119,9 @@ export type Database = {
           boat_name: string
           boat_type: string
           created_at: string
+          customer_address: string
           customer_name: string
+          customer_phone: string
           customer_token: string
           description: string
           hourly_rate: number
@@ -135,7 +137,9 @@ export type Database = {
           boat_name: string
           boat_type: string
           created_at?: string
+          customer_address?: string
           customer_name: string
+          customer_phone?: string
           customer_token?: string
           description: string
           hourly_rate?: number
@@ -151,7 +155,9 @@ export type Database = {
           boat_name?: string
           boat_type?: string
           created_at?: string
+          customer_address?: string
           customer_name?: string
+          customer_phone?: string
           customer_token?: string
           description?: string
           hourly_rate?: number
