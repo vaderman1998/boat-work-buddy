@@ -19,6 +19,8 @@ export interface Job {
   tax_rate: number;
   customer_address: string;
   customer_phone: string;
+  engine_make_model: string;
+  engine_serial: string;
 }
 
 export interface JobPart {

@@ -74,6 +74,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const [isEditingContact, setIsEditingContact] = useState(false);
   const [editAddress, setEditAddress] = useState(job.customer_address || "");
   const [editPhone, setEditPhone] = useState(job.customer_phone || "");
+  const [editEngineMakeModel, setEditEngineMakeModel] = useState(job.engine_make_model || "");
+  const [editEngineSerial, setEditEngineSerial] = useState(job.engine_serial || "");
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState<string>('');
 
@@ -461,16 +463,36 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
                   className="h-7 text-sm"
                 />
               </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Engine Make/Model</Label>
+                <Input
+                  value={editEngineMakeModel}
+                  onChange={(e) => setEditEngineMakeModel(e.target.value)}
+                  placeholder="e.g., Mercury 250HP"
+                  className="h-7 text-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Serial Number</Label>
+                <Input
+                  value={editEngineSerial}
+                  onChange={(e) => setEditEngineSerial(e.target.value)}
+                  placeholder="e.g., 1B234567"
+                  className="h-7 text-sm"
+                />
+              </div>
               <div className="flex gap-1">
                 <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => {
                   setIsEditingContact(false);
                   setEditPhone(job.customer_phone || "");
                   setEditAddress(job.customer_address || "");
+                  setEditEngineMakeModel(job.engine_make_model || "");
+                  setEditEngineSerial(job.engine_serial || "");
                 }}>Cancel</Button>
                 <Button size="sm" className="h-6 px-2 text-xs" onClick={() => {
                   updateJobMutation.mutate({
                     id: job.id,
-                    updates: { customer_phone: editPhone, customer_address: editAddress }
+                    updates: { customer_phone: editPhone, customer_address: editAddress, engine_make_model: editEngineMakeModel, engine_serial: editEngineSerial }
                   }, { onSuccess: () => setIsEditingContact(false) });
                 }}>Save</Button>
               </div>
@@ -481,7 +503,11 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
                 {job.customer_phone && <span>📞 {job.customer_phone}</span>}
                 {job.customer_phone && job.customer_address && <span> • </span>}
                 {job.customer_address && <span>📍 {job.customer_address}</span>}
-                {!job.customer_phone && !job.customer_address && <span className="italic">No contact info</span>}
+                {(job.customer_phone || job.customer_address) && (job.engine_make_model || job.engine_serial) && <span> • </span>}
+                {job.engine_make_model && <span>🔧 {job.engine_make_model}</span>}
+                {job.engine_make_model && job.engine_serial && <span> • </span>}
+                {job.engine_serial && <span>S/N: {job.engine_serial}</span>}
+                {!job.customer_phone && !job.customer_address && !job.engine_make_model && !job.engine_serial && <span className="italic">No contact/engine info</span>}
               </span>
               {user && (
                 <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => setIsEditingContact(true)}>
