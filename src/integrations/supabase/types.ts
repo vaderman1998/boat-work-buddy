@@ -124,6 +124,8 @@ export type Database = {
           customer_phone: string
           customer_token: string
           description: string
+          engine_make_model: string
+          engine_serial: string
           hourly_rate: number
           id: string
           paid: boolean
@@ -142,6 +144,8 @@ export type Database = {
           customer_phone?: string
           customer_token?: string
           description: string
+          engine_make_model?: string
+          engine_serial?: string
           hourly_rate?: number
           id?: string
           paid?: boolean
@@ -160,6 +164,8 @@ export type Database = {
           customer_phone?: string
           customer_token?: string
           description?: string
+          engine_make_model?: string
+          engine_serial?: string
           hourly_rate?: number
           id?: string
           paid?: boolean
