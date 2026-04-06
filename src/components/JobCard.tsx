@@ -391,10 +391,60 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
     )}>
       <CardHeader>
         <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-xl font-bold">{job.boat_name}</CardTitle>
-            <p className="text-muted-foreground">{job.customer_name} • {job.boat_type}</p>
-          </div>
+          {isEditingDetails && user ? (
+            <div className="space-y-2 flex-1 mr-4">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-xs">Customer Name</Label>
+                  <Input value={editCustomerName} onChange={(e) => setEditCustomerName(e.target.value)} className="h-7 text-sm" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Boat Name</Label>
+                  <Input value={editBoatName} onChange={(e) => setEditBoatName(e.target.value)} className="h-7 text-sm" />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Boat Type</Label>
+                <Input value={editBoatType} onChange={(e) => setEditBoatType(e.target.value)} className="h-7 text-sm" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Description</Label>
+                <Textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} className="text-sm min-h-[60px]" />
+              </div>
+              <div className="flex gap-1">
+                <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => {
+                  setIsEditingDetails(false);
+                  setEditCustomerName(job.customer_name);
+                  setEditBoatName(job.boat_name);
+                  setEditBoatType(job.boat_type);
+                  setEditDescription(job.description);
+                }}>Cancel</Button>
+                <Button size="sm" className="h-6 px-2 text-xs" onClick={() => {
+                  updateJobMutation.mutate({
+                    id: job.id,
+                    updates: {
+                      customer_name: editCustomerName,
+                      boat_name: editBoatName,
+                      boat_type: editBoatType,
+                      description: editDescription,
+                    }
+                  }, { onSuccess: () => setIsEditingDetails(false) });
+                }}>Save</Button>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-xl font-bold">{job.boat_name}</CardTitle>
+                {user && (
+                  <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => setIsEditingDetails(true)}>
+                    Edit
+                  </Button>
+                )}
+              </div>
+              <p className="text-muted-foreground">{job.customer_name} • {job.boat_type}</p>
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <Badge variant={job.status === "active" ? "default" : "secondary"}>
               {job.status}
@@ -444,7 +494,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
       </CardHeader>
 
       <CardContent className="space-y-4">
-        <p className="text-sm">{job.description}</p>
+        {!isEditingDetails && <p className="text-sm">{job.description}</p>}
 
         {/* Customer Contact Info */}
         <div className="text-sm">
