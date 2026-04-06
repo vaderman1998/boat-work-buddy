@@ -97,7 +97,8 @@ export const AddJobDialog = () => {
                 required
               />
             </div>
-          
+          </div>
+
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="boatType">Boat Type</Label>
