@@ -125,6 +125,8 @@ export default function Invoice() {
             {job.customer_address && <p className="text-muted-foreground">{job.customer_address}</p>}
             {job.customer_phone && <p className="text-muted-foreground">{job.customer_phone}</p>}
             <p className="text-muted-foreground">Boat: {job.boat_name} ({job.boat_type})</p>
+            {job.engine_make_model && <p className="text-muted-foreground">Engine: {job.engine_make_model}</p>}
+            {job.engine_serial && <p className="text-muted-foreground">Serial #: {job.engine_serial}</p>}
           </div>
         </div>
 
