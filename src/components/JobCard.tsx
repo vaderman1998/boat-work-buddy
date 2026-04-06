@@ -74,6 +74,11 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const [isEditingContact, setIsEditingContact] = useState(false);
   const [editAddress, setEditAddress] = useState(job.customer_address || "");
   const [editPhone, setEditPhone] = useState(job.customer_phone || "");
+  const [isEditingDetails, setIsEditingDetails] = useState(false);
+  const [editCustomerName, setEditCustomerName] = useState(job.customer_name);
+  const [editBoatName, setEditBoatName] = useState(job.boat_name);
+  const [editBoatType, setEditBoatType] = useState(job.boat_type);
+  const [editDescription, setEditDescription] = useState(job.description);
   const [editEngineMakeModel, setEditEngineMakeModel] = useState(job.engine_make_model || "");
   const [editEngineSerial, setEditEngineSerial] = useState(job.engine_serial || "");
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
