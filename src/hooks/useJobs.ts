@@ -17,6 +17,8 @@ export interface Job {
   paid: boolean;
   payment_amount: number;
   tax_rate: number;
+  customer_address: string;
+  customer_phone: string;
 }
 
 export interface JobPart {
