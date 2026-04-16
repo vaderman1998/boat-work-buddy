@@ -128,6 +128,7 @@ export type Database = {
           engine_serial: string
           hourly_rate: number
           id: string
+          model_number: string
           paid: boolean
           payment_amount: number
           status: string
@@ -148,6 +149,7 @@ export type Database = {
           engine_serial?: string
           hourly_rate?: number
           id?: string
+          model_number?: string
           paid?: boolean
           payment_amount?: number
           status?: string
@@ -168,6 +170,7 @@ export type Database = {
           engine_serial?: string
           hourly_rate?: number
           id?: string
+          model_number?: string
           paid?: boolean
           payment_amount?: number
           status?: string

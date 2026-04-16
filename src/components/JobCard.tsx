@@ -81,6 +81,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const [editDescription, setEditDescription] = useState(job.description);
   const [editEngineMakeModel, setEditEngineMakeModel] = useState(job.engine_make_model || "");
   const [editEngineSerial, setEditEngineSerial] = useState(job.engine_serial || "");
+  const [editModelNumber, setEditModelNumber] = useState(job.model_number || "");
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState<string>('');
 
@@ -528,6 +529,15 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
                 />
               </div>
               <div className="space-y-1">
+                <Label className="text-xs">Model Number</Label>
+                <Input
+                  value={editModelNumber}
+                  onChange={(e) => setEditModelNumber(e.target.value)}
+                  placeholder="e.g., 1F65453KT"
+                  className="h-7 text-sm"
+                />
+              </div>
+              <div className="space-y-1">
                 <Label className="text-xs">Serial Number</Label>
                 <Input
                   value={editEngineSerial}
@@ -543,11 +553,12 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
                   setEditAddress(job.customer_address || "");
                   setEditEngineMakeModel(job.engine_make_model || "");
                   setEditEngineSerial(job.engine_serial || "");
+                  setEditModelNumber(job.model_number || "");
                 }}>Cancel</Button>
                 <Button size="sm" className="h-6 px-2 text-xs" onClick={() => {
                   updateJobMutation.mutate({
                     id: job.id,
-                    updates: { customer_phone: editPhone, customer_address: editAddress, engine_make_model: editEngineMakeModel, engine_serial: editEngineSerial }
+                    updates: { customer_phone: editPhone, customer_address: editAddress, engine_make_model: editEngineMakeModel, engine_serial: editEngineSerial, model_number: editModelNumber }
                   }, { onSuccess: () => setIsEditingContact(false) });
                 }}>Save</Button>
               </div>
@@ -558,11 +569,13 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
                 {job.customer_phone && <span>📞 {job.customer_phone}</span>}
                 {job.customer_phone && job.customer_address && <span> • </span>}
                 {job.customer_address && <span>📍 {job.customer_address}</span>}
-                {(job.customer_phone || job.customer_address) && (job.engine_make_model || job.engine_serial) && <span> • </span>}
+                {(job.customer_phone || job.customer_address) && (job.engine_make_model || job.model_number || job.engine_serial) && <span> • </span>}
                 {job.engine_make_model && <span>🔧 {job.engine_make_model}</span>}
-                {job.engine_make_model && job.engine_serial && <span> • </span>}
+                {job.engine_make_model && job.model_number && <span> • </span>}
+                {job.model_number && <span>Model: {job.model_number}</span>}
+                {(job.engine_make_model || job.model_number) && job.engine_serial && <span> • </span>}
                 {job.engine_serial && <span>S/N: {job.engine_serial}</span>}
-                {!job.customer_phone && !job.customer_address && !job.engine_make_model && !job.engine_serial && <span className="italic">No contact/engine info</span>}
+                {!job.customer_phone && !job.customer_address && !job.engine_make_model && !job.model_number && !job.engine_serial && <span className="italic">No contact/engine info</span>}
               </span>
               {user && (
                 <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => setIsEditingContact(true)}>
