@@ -529,6 +529,15 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
                 />
               </div>
               <div className="space-y-1">
+                <Label className="text-xs">Model Number</Label>
+                <Input
+                  value={editModelNumber}
+                  onChange={(e) => setEditModelNumber(e.target.value)}
+                  placeholder="e.g., 1F65453KT"
+                  className="h-7 text-sm"
+                />
+              </div>
+              <div className="space-y-1">
                 <Label className="text-xs">Serial Number</Label>
                 <Input
                   value={editEngineSerial}
@@ -544,11 +553,12 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
                   setEditAddress(job.customer_address || "");
                   setEditEngineMakeModel(job.engine_make_model || "");
                   setEditEngineSerial(job.engine_serial || "");
+                  setEditModelNumber(job.model_number || "");
                 }}>Cancel</Button>
                 <Button size="sm" className="h-6 px-2 text-xs" onClick={() => {
                   updateJobMutation.mutate({
                     id: job.id,
-                    updates: { customer_phone: editPhone, customer_address: editAddress, engine_make_model: editEngineMakeModel, engine_serial: editEngineSerial }
+                    updates: { customer_phone: editPhone, customer_address: editAddress, engine_make_model: editEngineMakeModel, engine_serial: editEngineSerial, model_number: editModelNumber }
                   }, { onSuccess: () => setIsEditingContact(false) });
                 }}>Save</Button>
               </div>
