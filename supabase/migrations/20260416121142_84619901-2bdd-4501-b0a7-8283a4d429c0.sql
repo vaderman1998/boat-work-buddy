@@ -1,0 +1,1 @@
+ALTER TABLE public.jobs ADD COLUMN model_number text NOT NULL DEFAULT '';
