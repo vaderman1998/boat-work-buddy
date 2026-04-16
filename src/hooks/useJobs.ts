@@ -21,6 +21,7 @@ export interface Job {
   customer_phone: string;
   engine_make_model: string;
   engine_serial: string;
+  model_number: string;
 }
 
 export interface JobPart {

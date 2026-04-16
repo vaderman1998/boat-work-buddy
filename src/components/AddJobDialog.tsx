@@ -20,6 +20,7 @@ export const AddJobDialog = () => {
     customer_phone: "",
     engine_make_model: "",
     engine_serial: "",
+    model_number: "",
   });
 
   const createJobMutation = useCreateJob();
@@ -42,6 +43,7 @@ export const AddJobDialog = () => {
       customer_phone: "",
       engine_make_model: "",
       engine_serial: "",
+      model_number: "",
     });
     setOpen(false);
   };
@@ -103,7 +105,7 @@ export const AddJobDialog = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="engineMakeModel">Engine Make/Model</Label>
               <Input
@@ -111,6 +113,15 @@ export const AddJobDialog = () => {
                 value={formData.engine_make_model}
                 onChange={(e) => setFormData(prev => ({ ...prev, engine_make_model: e.target.value }))}
                 placeholder="e.g., Mercury 150HP"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="modelNumber">Model Number</Label>
+              <Input
+                id="modelNumber"
+                value={formData.model_number}
+                onChange={(e) => setFormData(prev => ({ ...prev, model_number: e.target.value }))}
+                placeholder="e.g., 1F65453KT"
               />
             </div>
             <div className="space-y-2">

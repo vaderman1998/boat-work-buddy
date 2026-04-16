@@ -81,6 +81,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const [editDescription, setEditDescription] = useState(job.description);
   const [editEngineMakeModel, setEditEngineMakeModel] = useState(job.engine_make_model || "");
   const [editEngineSerial, setEditEngineSerial] = useState(job.engine_serial || "");
+  const [editModelNumber, setEditModelNumber] = useState(job.model_number || "");
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState<string>('');
 
