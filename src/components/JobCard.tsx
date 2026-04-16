@@ -569,11 +569,13 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
                 {job.customer_phone && <span>📞 {job.customer_phone}</span>}
                 {job.customer_phone && job.customer_address && <span> • </span>}
                 {job.customer_address && <span>📍 {job.customer_address}</span>}
-                {(job.customer_phone || job.customer_address) && (job.engine_make_model || job.engine_serial) && <span> • </span>}
+                {(job.customer_phone || job.customer_address) && (job.engine_make_model || job.model_number || job.engine_serial) && <span> • </span>}
                 {job.engine_make_model && <span>🔧 {job.engine_make_model}</span>}
-                {job.engine_make_model && job.engine_serial && <span> • </span>}
+                {job.engine_make_model && job.model_number && <span> • </span>}
+                {job.model_number && <span>Model: {job.model_number}</span>}
+                {(job.engine_make_model || job.model_number) && job.engine_serial && <span> • </span>}
                 {job.engine_serial && <span>S/N: {job.engine_serial}</span>}
-                {!job.customer_phone && !job.customer_address && !job.engine_make_model && !job.engine_serial && <span className="italic">No contact/engine info</span>}
+                {!job.customer_phone && !job.customer_address && !job.engine_make_model && !job.model_number && !job.engine_serial && <span className="italic">No contact/engine info</span>}
               </span>
               {user && (
                 <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => setIsEditingContact(true)}>
