@@ -32,6 +32,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const addPartMutation = useAddJobPart();
   const addNoteMutation = useAddJobNote();
   const updatePartMutation = useUpdateJobPart();
+  const deletePartMutation = useDeleteJobPart();
   const updateNoteMutation = useUpdateJobNote();
   const createTimeSessionMutation = useCreateTimeSession();
 
