@@ -10,7 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Clock, Play, Pause, CheckCircle, Trash2, ChevronDown, ChevronRight, Plus, Package, FileText, Copy, Anchor, Share2, Receipt, Undo2, RotateCcw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { useUpdateJob, useDeleteJob, useJobParts, useJobNotes, useAddJobPart, useAddJobNote, useUpdateJobPart, useUpdateJobNote, type Job } from "@/hooks/useJobs";
+import { useUpdateJob, useDeleteJob, useJobParts, useJobNotes, useAddJobPart, useAddJobNote, useUpdateJobPart, useUpdateJobNote, useDeleteJobPart, type Job } from "@/hooks/useJobs";
 import { useTimeSessions, useCreateTimeSession } from "@/hooks/useTimeSessions";
 import { TimeSessionCard } from "@/components/TimeSessionCard";
 import { cn } from "@/lib/utils";
@@ -32,6 +32,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const addPartMutation = useAddJobPart();
   const addNoteMutation = useAddJobNote();
   const updatePartMutation = useUpdateJobPart();
+  const deletePartMutation = useDeleteJobPart();
   const updateNoteMutation = useUpdateJobNote();
   const createTimeSessionMutation = useCreateTimeSession();
 
@@ -1060,13 +1061,27 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
                       </p>
                     </div>
                     {user && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => startEditingPart(part)}
-                      >
-                        Edit
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => startEditingPart(part)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => {
+                            if (window.confirm(`Remove "${part.name}" from this job?`)) {
+                              deletePartMutation.mutate({ id: part.id, job_id: job.id });
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
                     )}
                   </div>
                 )}
