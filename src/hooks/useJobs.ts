@@ -271,6 +271,36 @@ export const useUpdateJobPart = () => {
   });
 };
 
+export const useDeleteJobPart = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, job_id }: { id: string; job_id: string }) => {
+      const { error } = await supabase
+        .from('job_parts')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      return { id, job_id };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['job-parts', data.job_id] });
+      toast({
+        title: "Part removed",
+        description: "Part has been removed from the job.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error removing part",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+};
+
 export const useUpdateJobNote = () => {
   const queryClient = useQueryClient();
   
