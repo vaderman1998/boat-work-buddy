@@ -695,8 +695,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
           </div>
         )}
 
-        {/* Payment Section - Only show for completed jobs */}
-        {job.status === "completed" && user && (
+        {/* Payment Section - available for active and completed jobs */}
+        {user && (
           <div className="pt-4 border-t space-y-2">
             {job.paid ? (
               <>
