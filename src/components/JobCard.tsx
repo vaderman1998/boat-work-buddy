@@ -10,7 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Clock, Play, Pause, CheckCircle, Trash2, ChevronDown, ChevronRight, Plus, Package, FileText, Copy, Anchor, Share2, Receipt, Undo2, RotateCcw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { useUpdateJob, useDeleteJob, useJobParts, useJobNotes, useAddJobPart, useAddJobNote, useUpdateJobPart, useUpdateJobNote, type Job } from "@/hooks/useJobs";
+import { useUpdateJob, useDeleteJob, useJobParts, useJobNotes, useAddJobPart, useAddJobNote, useUpdateJobPart, useUpdateJobNote, useDeleteJobPart, type Job } from "@/hooks/useJobs";
 import { useTimeSessions, useCreateTimeSession } from "@/hooks/useTimeSessions";
 import { TimeSessionCard } from "@/components/TimeSessionCard";
 import { cn } from "@/lib/utils";
