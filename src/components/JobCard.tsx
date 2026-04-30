@@ -1061,13 +1061,27 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
                       </p>
                     </div>
                     {user && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => startEditingPart(part)}
-                      >
-                        Edit
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => startEditingPart(part)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => {
+                            if (window.confirm(`Remove "${part.name}" from this job?`)) {
+                              deletePartMutation.mutate({ id: part.id, job_id: job.id });
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
                     )}
                   </div>
                 )}
