@@ -83,9 +83,12 @@ export default function JobView() {
   const partsCost = parts.reduce((total, part) => total + (part.quantity * part.cost_per_unit), 0);
   const laborCost = job.total_hours * job.hourly_rate;
   const subtotal = partsCost + laborCost;
+  const discountPercent = job.discount_percent || 0;
+  const discountAmount = subtotal * (discountPercent / 100);
+  const discountedSubtotal = subtotal - discountAmount;
   const taxRate = job.tax_rate || 0;
-  const taxAmount = subtotal * (taxRate / 100);
-  const totalCost = subtotal + taxAmount;
+  const taxAmount = discountedSubtotal * (taxRate / 100);
+  const totalCost = discountedSubtotal + taxAmount;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-maritime-light">

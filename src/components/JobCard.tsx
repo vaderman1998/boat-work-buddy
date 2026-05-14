@@ -670,6 +670,42 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
             <span className="font-medium">Parts Cost:</span>
             <p>${partsCost.toFixed(2)}</p>
           </div>
+          <div>
+            <span className="font-medium">Discount:</span>
+            {isEditingDiscount && user ? (
+              <div className="flex gap-1 items-center mt-1">
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  value={editDiscount}
+                  onChange={(e) => setEditDiscount(parseFloat(e.target.value) || 0)}
+                  className="h-7 w-24"
+                />
+                <span className="text-sm">%</span>
+                <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => { setIsEditingDiscount(false); setEditDiscount(job.discount_percent || 0); }}>
+                  Cancel
+                </Button>
+                <Button size="sm" className="h-7 px-2" onClick={() => {
+                  updateJobMutation.mutate({ id: job.id, updates: { discount_percent: editDiscount } }, {
+                    onSuccess: () => setIsEditingDiscount(false)
+                  });
+                }}>
+                  Save
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <p>{discountPercent}%{discountPercent > 0 && ` (-$${discountAmount.toFixed(2)})`}</p>
+                {user && (
+                  <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => { setIsEditingDiscount(true); setEditDiscount(job.discount_percent || 0); }}>
+                    Edit
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
           {taxRate > 0 && (
             <div>
               <span className="font-medium">Tax ({taxRate}%):</span>
