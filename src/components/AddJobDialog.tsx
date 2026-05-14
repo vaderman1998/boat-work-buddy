@@ -21,6 +21,7 @@ export const AddJobDialog = () => {
     engine_make_model: "",
     engine_serial: "",
     model_number: "",
+      discount_percent: 0,
   });
 
   const createJobMutation = useCreateJob();
@@ -44,6 +45,7 @@ export const AddJobDialog = () => {
       engine_make_model: "",
       engine_serial: "",
       model_number: "",
+      discount_percent: 0,
     });
     setOpen(false);
   };

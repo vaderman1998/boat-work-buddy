@@ -83,9 +83,12 @@ export default function JobView() {
   const partsCost = parts.reduce((total, part) => total + (part.quantity * part.cost_per_unit), 0);
   const laborCost = job.total_hours * job.hourly_rate;
   const subtotal = partsCost + laborCost;
+  const discountPercent = job.discount_percent || 0;
+  const discountAmount = subtotal * (discountPercent / 100);
+  const discountedSubtotal = subtotal - discountAmount;
   const taxRate = job.tax_rate || 0;
-  const taxAmount = subtotal * (taxRate / 100);
-  const totalCost = subtotal + taxAmount;
+  const taxAmount = discountedSubtotal * (taxRate / 100);
+  const totalCost = discountedSubtotal + taxAmount;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-maritime-light">
@@ -182,6 +185,16 @@ export default function JobView() {
             {(job.payment_amount > 0 || job.paid) && (
               <div className="p-4 rounded-lg border-2 border-green-500/30 bg-green-50/50">
                 <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="font-medium">${subtotal.toFixed(2)}</span>
+                  </div>
+                  {discountPercent > 0 && (
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span>Discount ({discountPercent}%)</span>
+                      <span>-${discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Total</span>
                     <span className="font-medium">${totalCost.toFixed(2)}</span>

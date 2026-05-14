@@ -124,6 +124,7 @@ export type Database = {
           customer_phone: string
           customer_token: string
           description: string
+          discount_percent: number
           engine_make_model: string
           engine_serial: string
           hourly_rate: number
@@ -145,6 +146,7 @@ export type Database = {
           customer_phone?: string
           customer_token?: string
           description: string
+          discount_percent?: number
           engine_make_model?: string
           engine_serial?: string
           hourly_rate?: number
@@ -166,6 +168,7 @@ export type Database = {
           customer_phone?: string
           customer_token?: string
           description?: string
+          discount_percent?: number
           engine_make_model?: string
           engine_serial?: string
           hourly_rate?: number

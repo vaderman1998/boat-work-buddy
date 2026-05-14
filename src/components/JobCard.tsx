@@ -72,6 +72,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const [editHourlyRate, setEditHourlyRate] = useState(job.hourly_rate);
   const [isEditingTaxRate, setIsEditingTaxRate] = useState(false);
   const [editTaxRate, setEditTaxRate] = useState(job.tax_rate || 0);
+  const [isEditingDiscount, setIsEditingDiscount] = useState(false);
+  const [editDiscount, setEditDiscount] = useState(job.discount_percent || 0);
   const [isEditingContact, setIsEditingContact] = useState(false);
   const [editAddress, setEditAddress] = useState(job.customer_address || "");
   const [editPhone, setEditPhone] = useState(job.customer_phone || "");
@@ -247,9 +249,12 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const partsCost = parts.reduce((total, part) => total + (part.quantity * part.cost_per_unit), 0);
   const laborCost = job.total_hours * job.hourly_rate;
   const subtotal = partsCost + laborCost;
+  const discountPercent = job.discount_percent || 0;
+  const discountAmount = subtotal * (discountPercent / 100);
+  const discountedSubtotal = subtotal - discountAmount;
   const taxRate = job.tax_rate || 0;
-  const taxAmount = subtotal * (taxRate / 100);
-  const totalCost = subtotal + taxAmount;
+  const taxAmount = discountedSubtotal * (taxRate / 100);
+  const totalCost = discountedSubtotal + taxAmount;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -664,6 +669,42 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
           <div>
             <span className="font-medium">Parts Cost:</span>
             <p>${partsCost.toFixed(2)}</p>
+          </div>
+          <div>
+            <span className="font-medium">Discount:</span>
+            {isEditingDiscount && user ? (
+              <div className="flex gap-1 items-center mt-1">
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  value={editDiscount}
+                  onChange={(e) => setEditDiscount(parseFloat(e.target.value) || 0)}
+                  className="h-7 w-24"
+                />
+                <span className="text-sm">%</span>
+                <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => { setIsEditingDiscount(false); setEditDiscount(job.discount_percent || 0); }}>
+                  Cancel
+                </Button>
+                <Button size="sm" className="h-7 px-2" onClick={() => {
+                  updateJobMutation.mutate({ id: job.id, updates: { discount_percent: editDiscount } }, {
+                    onSuccess: () => setIsEditingDiscount(false)
+                  });
+                }}>
+                  Save
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <p>{discountPercent}%{discountPercent > 0 && ` (-$${discountAmount.toFixed(2)})`}</p>
+                {user && (
+                  <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => { setIsEditingDiscount(true); setEditDiscount(job.discount_percent || 0); }}>
+                    Edit
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
           {taxRate > 0 && (
             <div>
