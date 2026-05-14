@@ -186,6 +186,16 @@ export default function JobView() {
               <div className="p-4 rounded-lg border-2 border-green-500/30 bg-green-50/50">
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="font-medium">${subtotal.toFixed(2)}</span>
+                  </div>
+                  {discountPercent > 0 && (
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span>Discount ({discountPercent}%)</span>
+                      <span>-${discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Total</span>
                     <span className="font-medium">${totalCost.toFixed(2)}</span>
                   </div>
