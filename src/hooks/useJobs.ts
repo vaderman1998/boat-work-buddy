@@ -22,6 +22,7 @@ export interface Job {
   engine_make_model: string;
   engine_serial: string;
   model_number: string;
+  discount_percent: number;
 }
 
 export interface JobPart {

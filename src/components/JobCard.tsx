@@ -72,6 +72,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const [editHourlyRate, setEditHourlyRate] = useState(job.hourly_rate);
   const [isEditingTaxRate, setIsEditingTaxRate] = useState(false);
   const [editTaxRate, setEditTaxRate] = useState(job.tax_rate || 0);
+  const [isEditingDiscount, setIsEditingDiscount] = useState(false);
+  const [editDiscount, setEditDiscount] = useState(job.discount_percent || 0);
   const [isEditingContact, setIsEditingContact] = useState(false);
   const [editAddress, setEditAddress] = useState(job.customer_address || "");
   const [editPhone, setEditPhone] = useState(job.customer_phone || "");
@@ -247,9 +249,12 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   const partsCost = parts.reduce((total, part) => total + (part.quantity * part.cost_per_unit), 0);
   const laborCost = job.total_hours * job.hourly_rate;
   const subtotal = partsCost + laborCost;
+  const discountPercent = job.discount_percent || 0;
+  const discountAmount = subtotal * (discountPercent / 100);
+  const discountedSubtotal = subtotal - discountAmount;
   const taxRate = job.tax_rate || 0;
-  const taxAmount = subtotal * (taxRate / 100);
-  const totalCost = subtotal + taxAmount;
+  const taxAmount = discountedSubtotal * (taxRate / 100);
+  const totalCost = discountedSubtotal + taxAmount;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
