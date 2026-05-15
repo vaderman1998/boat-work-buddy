@@ -386,7 +386,7 @@ export default function JobView() {
         {/* Footer */}
         <div className="text-center mt-8 p-4 text-sm text-muted-foreground">
           <p>This page updates automatically as work progresses on your boat.</p>
-          <p className="mt-1">For questions, please contact B & A Engine Worx LLC directly.</p>
+          <p className="mt-1">For questions, please contact B & A Engine Worx LLC at steve@baengineworx.com</p>
         </div>
       </div>
     </div>
