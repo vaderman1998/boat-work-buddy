@@ -107,7 +107,7 @@ export default function Invoice() {
             </div>
             <p className="text-muted-foreground">Professional Boat Engine Service & Repair</p>
             <div className="mt-4 text-sm text-muted-foreground">
-              <p>Email: steve@baengineworx.com</p>
+              <p>Email: Steve@baengineworx.com</p>
             </div>
           </div>
           <div className="text-right">
@@ -264,7 +264,7 @@ export default function Invoice() {
         {/* Footer */}
         <div className="text-center mt-8 pt-6 border-t text-sm text-muted-foreground">
           <p>Thank you for choosing B & A Engine Worx LLC for your marine engine needs!</p>
-          <p className="mt-1">For questions about this invoice, please contact us at steve@baengineworx.com</p>
+          <p className="mt-1">For questions about this invoice, please contact us at Steve@baengineworx.com</p>
         </div>
       </div>
 
