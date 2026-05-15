@@ -107,7 +107,6 @@ export default function Invoice() {
             </div>
             <p className="text-muted-foreground">Professional Boat Engine Service & Repair</p>
             <div className="mt-4 text-sm text-muted-foreground">
-              <p>Email: sahall32@bellsouth.net</p>
               <p>Email: steve@baengineworx.com</p>
             </div>
           </div>
