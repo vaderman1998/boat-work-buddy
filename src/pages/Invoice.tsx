@@ -264,7 +264,7 @@ export default function Invoice() {
         {/* Footer */}
         <div className="text-center mt-8 pt-6 border-t text-sm text-muted-foreground">
           <p>Thank you for choosing B & A Engine Worx LLC for your marine engine needs!</p>
-          <p className="mt-1">For questions about this invoice, please contact us at sahall32@bellsouth.net</p>
+          <p className="mt-1">For questions about this invoice, please contact us at steve@baengineworx.com</p>
         </div>
       </div>
 
