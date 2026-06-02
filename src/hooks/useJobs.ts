@@ -23,6 +23,7 @@ export interface Job {
   engine_serial: string;
   model_number: string;
   discount_percent: number;
+  scheduled_date: string | null;
 }
 
 export interface JobPart {
