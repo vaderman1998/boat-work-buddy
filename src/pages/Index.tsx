@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Clock, DollarSign, Wrench, Calendar, Anchor, LogIn, LogOut, Eye, X } from "lucide-react";
 import { JobCard } from "@/components/JobCard";
+import { ActiveJobsSummary } from "@/components/ActiveJobsSummary";
 import { AddJobDialog } from "@/components/AddJobDialog";
 import { useJobs } from "@/hooks/useJobs";
 import { supabase } from "@/integrations/supabase/client";
@@ -305,13 +306,17 @@ const Index = () => {
                 <AddJobDialog />
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {activeJobs.map(job => (
-                  <JobCard key={job.id} job={job} />
-                ))}
-              </div>
+              <>
+                <ActiveJobsSummary jobs={activeJobs} canEdit={!isDemoMode && !!user} />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {activeJobs.map(job => (
+                    <JobCard key={job.id} job={job} />
+                  ))}
+                </div>
+              </>
             )}
           </TabsContent>
+
 
           <TabsContent value="completed" className="space-y-4">
             {completedJobs.length === 0 ? (
