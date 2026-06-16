@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Clock, DollarSign, Wrench, Calendar, Anchor, LogIn, LogOut, Eye, X } from "lucide-react";
 import { JobCard } from "@/components/JobCard";
 import { ActiveJobsSummary } from "@/components/ActiveJobsSummary";
+import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import { AddJobDialog } from "@/components/AddJobDialog";
 import { useJobs } from "@/hooks/useJobs";
 import { supabase } from "@/integrations/supabase/client";
@@ -339,6 +340,7 @@ const Index = () => {
           </TabsContent>
         </Tabs>
       </div>
+      <ScrollToTopButton />
     </div>
   );
 };
