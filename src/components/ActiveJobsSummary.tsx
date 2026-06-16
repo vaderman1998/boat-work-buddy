@@ -67,16 +67,30 @@ export const ActiveJobsSummary: React.FC<ActiveJobsSummaryProps> = ({ jobs, canE
         <div className="divide-y">
           {sorted.map((job) => (
             <div key={job.id} className="flex items-center justify-between gap-3 py-2">
-              <div className="min-w-0 flex-1">
+              <button
+                type="button"
+                onClick={() => {
+                  const el = document.getElementById(`job-card-${job.id}`);
+                  if (el) {
+                    el.scrollIntoView({ behavior: "smooth", block: "start" });
+                    el.classList.add("ring-2", "ring-maritime-medium", "rounded-lg");
+                    setTimeout(() => {
+                      el.classList.remove("ring-2", "ring-maritime-medium", "rounded-lg");
+                    }, 1600);
+                  }
+                }}
+                className="min-w-0 flex-1 text-left hover:opacity-80 transition-opacity cursor-pointer"
+                aria-label={`Jump to ${job.boat_name} job card`}
+              >
                 <div className="flex items-center gap-2 truncate">
                   <Wrench className="h-3.5 w-3.5 text-maritime-medium shrink-0" />
-                  <span className="font-medium truncate">{job.boat_name}</span>
+                  <span className="font-medium truncate underline-offset-2 hover:underline">{job.boat_name}</span>
                   <span className="text-muted-foreground text-sm truncate">— {job.customer_name}</span>
                 </div>
                 <p className="text-xs text-muted-foreground truncate ml-5">
                   {job.description || job.boat_type} • {job.total_hours.toFixed(1)}h
                 </p>
-              </div>
+              </button>
               <Popover
                 open={openId === job.id}
                 onOpenChange={(o) => canEdit && setOpenId(o ? job.id : null)}
