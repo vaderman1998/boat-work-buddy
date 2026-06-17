@@ -300,7 +300,7 @@ export default function JobView() {
                 {timeSessions.filter(s => !s.start_time && s.duration > 0).map((entry) => {
                   const hours = Math.floor(entry.duration / 3600);
                   const minutes = Math.floor((entry.duration % 3600) / 60);
-                  const cost = (entry.duration / 3600) * (entry.hourly_rate || job?.hourly_rate || 75);
+                  const cost = (entry.duration / 3600) * (entry.hourly_rate || job?.hourly_rate || 150);
                   
                   return (
                     <div key={entry.id} className="p-4 bg-muted rounded-lg border-l-4 border-l-blue-500">
@@ -314,7 +314,7 @@ export default function JobView() {
                           <p className="font-medium">{hours}h {minutes}m</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-muted-foreground">Rate: ${entry.hourly_rate || job?.hourly_rate || 75}/hr</p>
+                          <p className="text-muted-foreground">Rate: ${entry.hourly_rate || job?.hourly_rate || 150}/hr</p>
                           <p className="font-medium">${cost.toFixed(2)}</p>
                         </div>
                       </div>
