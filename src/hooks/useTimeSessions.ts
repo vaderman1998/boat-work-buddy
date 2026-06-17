@@ -46,7 +46,7 @@ export const useCreateTimeSession = () => {
         .insert({
           job_id: jobId,
           description,
-          hourly_rate: hourlyRate || 75.00,
+          hourly_rate: hourlyRate || 150.00,
         })
         .select()
         .single();
