@@ -17,7 +17,7 @@ export const TimeSessionCard = ({ session, isAuthenticated }: TimeSessionCardPro
   const [currentTime, setCurrentTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isEditingRate, setIsEditingRate] = useState(false);
-  const [editRate, setEditRate] = useState(session.hourly_rate?.toString() || "75.00");
+  const [editRate, setEditRate] = useState(session.hourly_rate?.toString() || "150.00");
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [editDescription, setEditDescription] = useState(session.description);
   const [isEditingTime, setIsEditingTime] = useState(false);
@@ -161,7 +161,7 @@ export const TimeSessionCard = ({ session, isAuthenticated }: TimeSessionCardPro
   };
 
   const handleCancelEdit = () => {
-    setEditRate(session.hourly_rate?.toString() || "75.00");
+    setEditRate(session.hourly_rate?.toString() || "150.00");
     setIsEditingRate(false);
   };
 
@@ -419,7 +419,7 @@ export const TimeSessionCard = ({ session, isAuthenticated }: TimeSessionCardPro
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <span className="font-medium">${(session.hourly_rate || 75).toFixed(2)}/hr</span>
+                <span className="font-medium">${(session.hourly_rate || 150).toFixed(2)}/hr</span>
                 <Button 
                   onClick={() => setIsEditingRate(true)} 
                   size="sm" 
