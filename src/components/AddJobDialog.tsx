@@ -221,7 +221,19 @@ export const AddJobDialog = () => {
             />
           </div>
 
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="saveCustomer"
+              checked={saveCustomer}
+              onCheckedChange={(checked) => setSaveCustomer(checked === true)}
+            />
+            <Label htmlFor="saveCustomer" className="text-sm font-normal">
+              {customerId ? "Update saved customer details" : "Save customer for next time"}
+            </Label>
+          </div>
+
           <div className="flex justify-end gap-2">
+
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
