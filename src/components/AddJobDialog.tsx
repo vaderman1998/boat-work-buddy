@@ -4,27 +4,50 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Plus } from "lucide-react";
 import { useCreateJob } from "@/hooks/useJobs";
+import { CustomerPicker } from "@/components/CustomerPicker";
+import { Customer, useSaveCustomer } from "@/hooks/useCustomers";
+
+const emptyForm = {
+  customer_name: "",
+  boat_name: "",
+  boat_type: "",
+  description: "",
+  hourly_rate: 150,
+  tax_rate: 0,
+  customer_address: "",
+  customer_phone: "",
+  engine_make_model: "",
+  engine_serial: "",
+  model_number: "",
+  discount_percent: 0,
+};
 
 export const AddJobDialog = () => {
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    customer_name: "",
-    boat_name: "",
-    boat_type: "",
-    description: "",
-    hourly_rate: 150,
-    tax_rate: 0,
-    customer_address: "",
-    customer_phone: "",
-    engine_make_model: "",
-    engine_serial: "",
-    model_number: "",
-      discount_percent: 0,
-  });
+  const [customerId, setCustomerId] = useState<string | null>(null);
+  const [saveCustomer, setSaveCustomer] = useState(true);
+  const [formData, setFormData] = useState({ ...emptyForm });
 
   const createJobMutation = useCreateJob();
+  const saveCustomerMutation = useSaveCustomer();
+
+  const handleSelectCustomer = (customer: Customer) => {
+    setCustomerId(customer.id);
+    setFormData((prev) => ({
+      ...prev,
+      customer_name: customer.name,
+      customer_phone: customer.phone,
+      customer_address: customer.address,
+      boat_name: customer.boat_name,
+      boat_type: customer.boat_type,
+      engine_make_model: customer.engine_make_model,
+      engine_serial: customer.engine_serial,
+      model_number: customer.model_number,
+    }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,20 +56,24 @@ export const AddJobDialog = () => {
       status: "active" as const,
       total_hours: 0,
     });
-    setFormData({
-      customer_name: "",
-      boat_name: "",
-      boat_type: "",
-      description: "",
-      hourly_rate: 150,
-      tax_rate: 0,
-      customer_address: "",
-      customer_phone: "",
-      engine_make_model: "",
-      engine_serial: "",
-      model_number: "",
-      discount_percent: 0,
-    });
+
+    if (saveCustomer && formData.customer_name.trim()) {
+      saveCustomerMutation.mutate({
+        ...(customerId ? { id: customerId } : {}),
+        name: formData.customer_name,
+        phone: formData.customer_phone,
+        address: formData.customer_address,
+        boat_name: formData.boat_name,
+        boat_type: formData.boat_type,
+        engine_make_model: formData.engine_make_model,
+        engine_serial: formData.engine_serial,
+        model_number: formData.model_number,
+        notes: "",
+      });
+    }
+
+    setFormData({ ...emptyForm });
+    setCustomerId(null);
     setOpen(false);
   };
 
@@ -63,6 +90,18 @@ export const AddJobDialog = () => {
           <DialogTitle>Add New Repair Job</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label>Returning Customer</Label>
+            <CustomerPicker
+              value={customerId}
+              onSelect={handleSelectCustomer}
+              onClear={() => setCustomerId(null)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Pick a saved customer to auto-fill their details.
+            </p>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="customerName">Customer Name</Label>
