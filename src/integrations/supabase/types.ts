@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      customers: {
+        Row: {
+          address: string
+          boat_name: string
+          boat_type: string
+          created_at: string
+          engine_make_model: string
+          engine_serial: string
+          id: string
+          model_number: string
+          name: string
+          notes: string
+          phone: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string
+          boat_name?: string
+          boat_type?: string
+          created_at?: string
+          engine_make_model?: string
+          engine_serial?: string
+          id?: string
+          model_number?: string
+          name: string
+          notes?: string
+          phone?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          boat_name?: string
+          boat_type?: string
+          created_at?: string
+          engine_make_model?: string
+          engine_serial?: string
+          id?: string
+          model_number?: string
+          name?: string
+          notes?: string
+          phone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       job_notes: {
         Row: {
           content: string
