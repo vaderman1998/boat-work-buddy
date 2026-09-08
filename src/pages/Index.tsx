@@ -154,7 +154,7 @@ const Index = () => {
     );
   }
 
-  const matchesSearch = (job: typeof jobs[0]) => {
+  const matchesSearch = (job: Job) => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
     return [
