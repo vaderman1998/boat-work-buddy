@@ -287,9 +287,30 @@ const Index = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <h2 className="text-2xl font-bold text-primary">Job Management</h2>
           {!isDemoMode && <AddJobDialog />}
+        </div>
+
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Search customers, boats, engines..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSearchQuery("")}
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 text-xs"
+            >
+              Clear
+            </Button>
+          )}
         </div>
 
         <Tabs defaultValue="active" className="w-full">
