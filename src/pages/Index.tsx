@@ -154,8 +154,24 @@ const Index = () => {
     );
   }
 
-  const activeJobs = jobs.filter(job => job.status === "active");
-  const completedJobs = jobs.filter(job => job.status === "completed");
+  const matchesSearch = (job: typeof jobs[0]) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return [
+      job.customer_name,
+      job.boat_name,
+      job.boat_type,
+      job.customer_phone,
+      job.customer_address,
+      job.engine_make_model,
+      job.engine_serial,
+      job.model_number,
+      job.description,
+    ].some((field) => field?.toLowerCase().includes(query));
+  };
+
+  const activeJobs = jobs.filter(job => job.status === "active" && matchesSearch(job));
+  const completedJobs = jobs.filter(job => job.status === "completed" && matchesSearch(job));
   
   const totalRevenue = jobs.reduce((total, job) => {
     const laborCost = job.total_hours * job.hourly_rate;
