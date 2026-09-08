@@ -24,6 +24,7 @@ const Index = () => {
   const [session, setSession] = useState<Session | null>(null);
   const { toast } = useToast();
   const { isDemoMode, setDemoMode } = useDemoMode();
+  const [searchQuery, setSearchQuery] = useState("");
   
   const jobs = isDemoMode ? mockJobs : realJobs;
 
