@@ -10,7 +10,7 @@ import { JobCard } from "@/components/JobCard";
 import { ActiveJobsSummary } from "@/components/ActiveJobsSummary";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import { AddJobDialog } from "@/components/AddJobDialog";
-import { useJobs } from "@/hooks/useJobs";
+import { useJobs, type Job } from "@/hooks/useJobs";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { useToast } from "@/components/ui/use-toast";
