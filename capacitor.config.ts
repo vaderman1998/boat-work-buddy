@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'boat-work-buddy',
   webDir: 'dist',
   server: {
-    url: 'https://786beb4a-1e12-46d6-bbcc-0fa6ba126582.lovableproject.com?forceHideBadge=true',
+    url: 'https://boat-work-buddy.lovable.app',
     cleartext: true,
   },
 };
