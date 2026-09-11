@@ -34,7 +34,7 @@ const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const { toast } = useToast();
-  const { isDemoMode, setDemoMode } = useDemoMode();
+  const { isDemoMode, isDemoAccount, setDemoMode } = useDemoMode();
   const [searchQuery, setSearchQuery] = useState("");
   
   const jobs = isDemoMode ? mockJobs : realJobs;
@@ -216,18 +216,21 @@ const Index = () => {
         <div className="bg-amber-500 text-white py-2 px-4 text-center relative">
           <div className="flex items-center justify-center gap-2">
             <Eye className="h-4 w-4" />
-            <span className="font-medium">Demo Mode - Changes won't be saved</span>
+            <span className="font-medium">Demo Mode - Sample data only, changes won't be saved</span>
           </div>
-          <Button
-            onClick={handleExitDemo}
-            variant="ghost"
-            size="sm"
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-white hover:text-white hover:bg-amber-600"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          {!isDemoAccount && (
+            <Button
+              onClick={handleExitDemo}
+              variant="ghost"
+              size="sm"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-white hover:text-white hover:bg-amber-600"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       )}
+
       
       {/* Header */}
       <div className="relative h-64 overflow-hidden">
@@ -249,12 +252,13 @@ const Index = () => {
         
         {/* Auth Controls */}
         <div className="absolute top-4 right-4 flex gap-2">
-          {isDemoMode && (
+          {isDemoMode && !isDemoAccount && (
             <Button onClick={handleExitDemo} variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
               <X className="h-4 w-4 mr-2" />
               Exit Demo
             </Button>
           )}
+
           {user ? (
             <>
               <Button onClick={handleSignOut} variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
