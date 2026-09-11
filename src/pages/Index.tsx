@@ -5,7 +5,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Clock, DollarSign, Wrench, Calendar, Anchor, LogIn, LogOut, Eye, X, Search } from "lucide-react";
+import { Clock, DollarSign, Wrench, Calendar, Anchor, LogIn, LogOut, Eye, X, Search, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { JobCard } from "@/components/JobCard";
 import { ActiveJobsSummary } from "@/components/ActiveJobsSummary";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
