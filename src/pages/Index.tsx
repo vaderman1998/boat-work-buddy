@@ -26,7 +26,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { useToast } from "@/components/ui/use-toast";
 import { useDemoMode } from "@/contexts/DemoContext";
-import { mockJobs } from "@/data/mockData";
 import backgroundImage from "@/assets/marina-workshop.jpg";
 
 const Index = () => {
@@ -37,7 +36,7 @@ const Index = () => {
   const { isDemoMode, isDemoAccount, setDemoMode } = useDemoMode();
   const [searchQuery, setSearchQuery] = useState("");
   
-  const jobs = isDemoMode ? mockJobs : realJobs;
+  const jobs = realJobs;
 
   useEffect(() => {
     // Set up auth state listener
@@ -344,7 +343,7 @@ const Index = () => {
         {/* Main Content */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <h2 className="text-2xl font-bold text-primary">Job Management</h2>
-          {!isDemoMode && <AddJobDialog />}
+          <AddJobDialog />
         </div>
 
         <div className="relative mb-6">
@@ -402,7 +401,7 @@ const Index = () => {
               </Card>
             ) : (
               <>
-                <ActiveJobsSummary jobs={activeJobs} canEdit={!isDemoMode && !!user} />
+                <ActiveJobsSummary jobs={activeJobs} canEdit={isDemoMode || !!user} />
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {activeJobs.map(job => (
                     <div key={job.id} id={`job-card-${job.id}`} className="scroll-mt-24">
