@@ -256,10 +256,32 @@ const Index = () => {
             </Button>
           )}
           {user ? (
-            <Button onClick={handleSignOut} variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
+            <>
+              <Button onClick={handleSignOut} variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This permanently deletes your login for B &amp; A Engine Worx. This cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteAccount}>Delete Account</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </>
           ) : !isDemoMode && (
             <Link to="/auth">
               <Button variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
