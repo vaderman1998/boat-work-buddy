@@ -384,9 +384,23 @@ export const useUpdateJobNote = () => {
 };
 
 export const useJobByToken = (token: string) => {
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ['job-by-token', token],
+    queryKey: ['job-by-token', scope(isDemoMode), token],
     queryFn: async () => {
+      if (isDemoMode) {
+        const job = demoStore.listJobs().find((j) => j.customer_token === token);
+        if (job) {
+          return {
+            job,
+            parts: demoStore.listParts(job.id),
+            notes: demoStore.listNotes(job.id),
+            timeSessions: demoStore.listSessions(job.id),
+          };
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke('customer-job', {
         body: { token }
       });
@@ -399,3 +413,4 @@ export const useJobByToken = (token: string) => {
     enabled: !!token,
   });
 };
+
