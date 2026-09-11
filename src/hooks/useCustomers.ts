@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useDemoMode } from '@/contexts/DemoContext';
+import { demoStore } from '@/data/demoStore';
 
 export interface Customer {
   id: string;
@@ -19,10 +21,16 @@ export interface Customer {
 
 export type CustomerInput = Omit<Customer, 'id' | 'created_at' | 'updated_at'>;
 
+const scope = (isDemo: boolean) => (isDemo ? 'demo' : 'live');
+
 export const useCustomers = () => {
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ['customers'],
+    queryKey: ['customers', scope(isDemoMode)],
     queryFn: async () => {
+      if (isDemoMode) return demoStore.listCustomers();
+
       const { data, error } = await supabase
         .from('customers')
         .select('*')
@@ -36,9 +44,12 @@ export const useCustomers = () => {
 
 export const useSaveCustomer = () => {
   const queryClient = useQueryClient();
+  const { isDemoMode } = useDemoMode();
 
   return useMutation({
     mutationFn: async (customer: CustomerInput & { id?: string }) => {
+      if (isDemoMode) return demoStore.saveCustomer(customer);
+
       if (customer.id) {
         const { id, ...updates } = customer;
         const { data, error } = await supabase
@@ -74,9 +85,15 @@ export const useSaveCustomer = () => {
 
 export const useDeleteCustomer = () => {
   const queryClient = useQueryClient();
+  const { isDemoMode } = useDemoMode();
 
   return useMutation({
     mutationFn: async (id: string) => {
+      if (isDemoMode) {
+        demoStore.deleteCustomer(id);
+        return;
+      }
+
       const { error } = await supabase.from('customers').delete().eq('id', id);
       if (error) throw error;
     },
