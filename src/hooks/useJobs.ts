@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useDemoMode } from '@/contexts/DemoContext';
+import { demoStore } from '@/data/demoStore';
 
 export interface Job {
   id: string;
@@ -42,10 +44,16 @@ export interface JobNote {
   created_at: string;
 }
 
+const scope = (isDemo: boolean) => (isDemo ? 'demo' : 'live');
+
 export const useJobs = () => {
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ['jobs'],
+    queryKey: ['jobs', scope(isDemoMode)],
     queryFn: async () => {
+      if (isDemoMode) return demoStore.listJobs();
+
       const { data, error } = await supabase
         .from('jobs')
         .select('*')
@@ -58,9 +66,13 @@ export const useJobs = () => {
 };
 
 export const useJobParts = (jobId: string) => {
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ['job-parts', jobId],
+    queryKey: ['job-parts', scope(isDemoMode), jobId],
     queryFn: async () => {
+      if (isDemoMode) return demoStore.listParts(jobId);
+
       const { data, error } = await supabase
         .from('job_parts')
         .select('*')
@@ -74,9 +86,13 @@ export const useJobParts = (jobId: string) => {
 };
 
 export const useJobNotes = (jobId: string) => {
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ['job-notes', jobId],
+    queryKey: ['job-notes', scope(isDemoMode), jobId],
     queryFn: async () => {
+      if (isDemoMode) return demoStore.listNotes(jobId);
+
       const { data, error } = await supabase
         .from('job_notes')
         .select('*')
@@ -91,9 +107,12 @@ export const useJobNotes = (jobId: string) => {
 
 export const useCreateJob = () => {
   const queryClient = useQueryClient();
+  const { isDemoMode } = useDemoMode();
   
   return useMutation({
     mutationFn: async (newJob: Omit<Job, 'id' | 'created_at' | 'updated_at' | 'customer_token' | 'paid' | 'payment_amount'>) => {
+      if (isDemoMode) return demoStore.createJob(newJob as Partial<Job>);
+
       const { data, error } = await supabase
         .from('jobs')
         .insert([newJob])
@@ -107,7 +126,9 @@ export const useCreateJob = () => {
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
       toast({
         title: "Job created successfully",
-        description: "The new job has been added to your dashboard.",
+        description: isDemoMode
+          ? "Demo job added. It disappears when you reload."
+          : "The new job has been added to your dashboard.",
       });
     },
     onError: (error) => {
@@ -122,9 +143,12 @@ export const useCreateJob = () => {
 
 export const useUpdateJob = () => {
   const queryClient = useQueryClient();
+  const { isDemoMode } = useDemoMode();
   
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Job> }) => {
+      if (isDemoMode) return demoStore.updateJob(id, updates);
+
       const { data, error } = await supabase
         .from('jobs')
         .update(updates)
@@ -150,9 +174,15 @@ export const useUpdateJob = () => {
 
 export const useDeleteJob = () => {
   const queryClient = useQueryClient();
+  const { isDemoMode } = useDemoMode();
   
   return useMutation({
     mutationFn: async (id: string) => {
+      if (isDemoMode) {
+        demoStore.deleteJob(id);
+        return;
+      }
+
       const { error } = await supabase
         .from('jobs')
         .delete()
@@ -179,9 +209,12 @@ export const useDeleteJob = () => {
 
 export const useAddJobPart = () => {
   const queryClient = useQueryClient();
+  const { isDemoMode } = useDemoMode();
   
   return useMutation({
     mutationFn: async (newPart: Omit<JobPart, 'id' | 'created_at'>) => {
+      if (isDemoMode) return demoStore.addPart(newPart);
+
       const { data, error } = await supabase
         .from('job_parts')
         .insert([newPart])
@@ -192,7 +225,7 @@ export const useAddJobPart = () => {
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['job-parts', variables.job_id] });
+      queryClient.invalidateQueries({ queryKey: ['job-parts'] });
     },
     onError: (error) => {
       toast({
@@ -206,9 +239,12 @@ export const useAddJobPart = () => {
 
 export const useAddJobNote = () => {
   const queryClient = useQueryClient();
+  const { isDemoMode } = useDemoMode();
   
   return useMutation({
     mutationFn: async (newNote: Omit<JobNote, 'id' | 'created_at'>) => {
+      if (isDemoMode) return demoStore.addNote(newNote);
+
       const { data, error } = await supabase
         .from('job_notes')
         .insert([newNote])
@@ -218,8 +254,8 @@ export const useAddJobNote = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['job-notes', variables.job_id] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['job-notes'] });
     },
     onError: (error) => {
       toast({
@@ -233,6 +269,7 @@ export const useAddJobNote = () => {
 
 export const useUpdateJobPart = () => {
   const queryClient = useQueryClient();
+  const { isDemoMode } = useDemoMode();
   
   return useMutation({
     mutationFn: async ({ 
@@ -246,6 +283,8 @@ export const useUpdateJobPart = () => {
       quantity: number; 
       cost_per_unit: number;
     }) => {
+      if (isDemoMode) return demoStore.updatePart(id, { name, quantity, cost_per_unit });
+
       const { data, error } = await supabase
         .from('job_parts')
         .update({ name, quantity, cost_per_unit })
@@ -256,8 +295,8 @@ export const useUpdateJobPart = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['job-parts', data.job_id] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['job-parts'] });
       toast({
         title: "Part updated",
         description: "Part has been updated successfully.",
@@ -275,9 +314,15 @@ export const useUpdateJobPart = () => {
 
 export const useDeleteJobPart = () => {
   const queryClient = useQueryClient();
+  const { isDemoMode } = useDemoMode();
 
   return useMutation({
     mutationFn: async ({ id, job_id }: { id: string; job_id: string }) => {
+      if (isDemoMode) {
+        demoStore.deletePart(id);
+        return { id, job_id };
+      }
+
       const { error } = await supabase
         .from('job_parts')
         .delete()
@@ -286,8 +331,8 @@ export const useDeleteJobPart = () => {
       if (error) throw error;
       return { id, job_id };
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['job-parts', data.job_id] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['job-parts'] });
       toast({
         title: "Part removed",
         description: "Part has been removed from the job.",
@@ -305,9 +350,12 @@ export const useDeleteJobPart = () => {
 
 export const useUpdateJobNote = () => {
   const queryClient = useQueryClient();
+  const { isDemoMode } = useDemoMode();
   
   return useMutation({
     mutationFn: async ({ id, content }: { id: string; content: string }) => {
+      if (isDemoMode) return demoStore.updateNote(id, content);
+
       const { data, error } = await supabase
         .from('job_notes')
         .update({ content })
@@ -318,8 +366,8 @@ export const useUpdateJobNote = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['job-notes', data.job_id] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['job-notes'] });
       toast({
         title: "Note updated",
         description: "Progress note has been updated successfully.",
@@ -336,9 +384,23 @@ export const useUpdateJobNote = () => {
 };
 
 export const useJobByToken = (token: string) => {
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ['job-by-token', token],
+    queryKey: ['job-by-token', scope(isDemoMode), token],
     queryFn: async () => {
+      if (isDemoMode) {
+        const job = demoStore.listJobs().find((j) => j.customer_token === token);
+        if (job) {
+          return {
+            job,
+            parts: demoStore.listParts(job.id),
+            notes: demoStore.listNotes(job.id),
+            timeSessions: demoStore.listSessions(job.id),
+          };
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke('customer-job', {
         body: { token }
       });
@@ -351,3 +413,4 @@ export const useJobByToken = (token: string) => {
     enabled: !!token,
   });
 };
+
