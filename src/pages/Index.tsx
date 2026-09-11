@@ -73,6 +73,24 @@ const Index = () => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    try {
+      const { error } = await supabase.functions.invoke("delete-account", { body: {} });
+      if (error) throw error;
+      await supabase.auth.signOut();
+      toast({
+        title: "Account deleted",
+        description: "Your account has been permanently deleted.",
+      });
+    } catch (e) {
+      toast({
+        title: "Could not delete account",
+        description: e instanceof Error ? e.message : "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleEnterDemo = () => {
     setDemoMode(true);
     toast({
