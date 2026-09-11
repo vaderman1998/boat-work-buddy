@@ -85,7 +85,7 @@ export const AddJobDialog = () => {
           New Job
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[85dvh] overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
         <DialogHeader>
           <DialogTitle>Add New Repair Job</DialogTitle>
         </DialogHeader>
