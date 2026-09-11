@@ -5,7 +5,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Clock, DollarSign, Wrench, Calendar, Anchor, LogIn, LogOut, Eye, X, Search } from "lucide-react";
+import { Clock, DollarSign, Wrench, Calendar, Anchor, LogIn, LogOut, Eye, X, Search, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { JobCard } from "@/components/JobCard";
 import { ActiveJobsSummary } from "@/components/ActiveJobsSummary";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
@@ -58,6 +69,24 @@ const Index = () => {
       toast({
         title: "Signed out",
         description: "You've been signed out successfully.",
+      });
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      const { error } = await supabase.functions.invoke("delete-account", { body: {} });
+      if (error) throw error;
+      await supabase.auth.signOut();
+      toast({
+        title: "Account deleted",
+        description: "Your account has been permanently deleted.",
+      });
+    } catch (e) {
+      toast({
+        title: "Could not delete account",
+        description: e instanceof Error ? e.message : "Please try again.",
+        variant: "destructive",
       });
     }
   };
@@ -227,10 +256,32 @@ const Index = () => {
             </Button>
           )}
           {user ? (
-            <Button onClick={handleSignOut} variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
+            <>
+              <Button onClick={handleSignOut} variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This permanently deletes your login for B &amp; A Engine Worx. This cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteAccount}>Delete Account</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </>
           ) : !isDemoMode && (
             <Link to="/auth">
               <Button variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
