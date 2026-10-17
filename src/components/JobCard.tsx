@@ -13,6 +13,8 @@ import { toast } from "@/hooks/use-toast";
 import { useUpdateJob, useDeleteJob, useJobParts, useJobNotes, useAddJobPart, useAddJobNote, useUpdateJobPart, useUpdateJobNote, useDeleteJobPart, type Job } from "@/hooks/useJobs";
 import { useTimeSessions, useCreateTimeSession } from "@/hooks/useTimeSessions";
 import { TimeSessionCard } from "@/components/TimeSessionCard";
+import { JobCreatedDate } from "@/components/JobCreatedDate";
+import { useDemoMode } from "@/contexts/DemoContext";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +25,7 @@ interface JobCardProps {
 }
 
 export const JobCard: React.FC<JobCardProps> = ({ job }) => {
+  const { isDemoMode } = useDemoMode();
   // Queries and mutations
   const { data: parts = [] } = useJobParts(job.id);
   const { data: notes = [] } = useJobNotes(job.id);
@@ -718,9 +721,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
           </div>
         </div>
         
-        <p className="text-sm text-muted-foreground mt-2">
-          Created: {formatDate(job.created_at)}
-        </p>
+        <JobCreatedDate job={job} canEdit={!!user || isDemoMode} />
 
         {/* Complete Job Button - Only show for active jobs and authenticated users */}
         {job.status === "active" && user && (
