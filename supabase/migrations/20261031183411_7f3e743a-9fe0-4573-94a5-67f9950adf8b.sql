@@ -1,0 +1,1 @@
+DELETE FROM auth.users WHERE id = '239b1e91-789d-485f-af55-cd20592b91ab' AND lower(email) = 'demo@baengineworx.com';
