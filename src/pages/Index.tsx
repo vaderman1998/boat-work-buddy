@@ -21,6 +21,7 @@ import { JobCard } from "@/components/JobCard";
 import { ActiveJobsSummary } from "@/components/ActiveJobsSummary";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import { AddJobDialog } from "@/components/AddJobDialog";
+import { ChangePasswordDialog } from "@/components/ChangePasswordDialog";
 import { useJobs, type Job } from "@/hooks/useJobs";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
@@ -260,6 +261,7 @@ const Index = () => {
 
           {user ? (
             <>
+              <ChangePasswordDialog />
               <Button onClick={handleSignOut} variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
