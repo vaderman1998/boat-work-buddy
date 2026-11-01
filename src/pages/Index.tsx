@@ -28,6 +28,9 @@ import { User, Session } from "@supabase/supabase-js";
 import { useToast } from "@/components/ui/use-toast";
 import { useDemoMode } from "@/contexts/DemoContext";
 import backgroundImage from "@/assets/marina-workshop.jpg";
+import { MainMenu } from '@/components/MainMenu';
+import { useInventory } from '@/hooks/useInventory';
+import { isLowStock } from '@/lib/inventory';
 
 const Index = () => {
   const { data: realJobs = [], isLoading, error } = useJobs();
@@ -36,6 +39,11 @@ const Index = () => {
   const { toast } = useToast();
   const { isDemoMode, isDemoAccount, setDemoMode } = useDemoMode();
   const [searchQuery, setSearchQuery] = useState("");
+  const inventory = useInventory();
+  useEffect(() => {
+    if (!realJobs.length || !window.location.hash.startsWith('#job-card-')) return;
+    requestAnimationFrame(() => document.getElementById(window.location.hash.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }, [realJobs]);
   
   const jobs = realJobs;
 
@@ -343,6 +351,10 @@ const Index = () => {
         </div>
 
         {/* Main Content */}
+        <MainMenu />
+        <Button asChild variant="outline" className="mb-6">
+          <Link to="/inventory">Inventory low-stock warnings: {inventory.isLoading ? '…' : inventory.error ? 'Unavailable' : (inventory.data?.items ?? []).filter(isLowStock).length}</Link>
+        </Button>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <h2 className="text-2xl font-bold text-primary">Job Management</h2>
           <AddJobDialog />

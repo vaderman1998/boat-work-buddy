@@ -10,6 +10,7 @@ import Invoice from "./pages/Invoice";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import Inventory from "./pages/Inventory";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
         <DemoProvider>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/inventory" element={<Inventory />} />
             <Route path="/job/:jobId" element={<JobView />} />
             <Route path="/invoice/:jobId" element={<Invoice />} />
             <Route path="/auth" element={<Auth />} />

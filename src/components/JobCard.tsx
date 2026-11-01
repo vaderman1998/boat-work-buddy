@@ -14,6 +14,7 @@ import { useUpdateJob, useDeleteJob, useJobParts, useJobNotes, useAddJobPart, us
 import { useTimeSessions, useCreateTimeSession } from "@/hooks/useTimeSessions";
 import { TimeSessionCard } from "@/components/TimeSessionCard";
 import { JobCreatedDate } from "@/components/JobCreatedDate";
+import { InventoryJobPicker } from '@/components/InventoryJobPicker';
 import { useDemoMode } from "@/contexts/DemoContext";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
@@ -1131,7 +1132,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
             ))}
             
             {/* Add new part form - Only show for authenticated users */}
-            {user && (
+            {(user || isDemoMode) && <InventoryJobPicker jobId={job.id} />}
+            {(user || isDemoMode) && (
               <div className="border-t pt-2 space-y-2">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
