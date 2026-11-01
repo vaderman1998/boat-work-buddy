@@ -381,7 +381,7 @@ const Index = () => {
           )}
         </div>
 
-        <Tabs defaultValue="active" className="w-full">
+        <Tabs defaultValue={jobs.some(job => job.status === 'completed' && window.location.hash === `#job-card-${job.id}`) ? 'completed' : 'active'} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="active" className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
