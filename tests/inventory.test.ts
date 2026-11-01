@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
-import { isLowStock, suggestedOrder, stockAfter } from './inventory';
-import { inventoryStore } from '../data/inventoryStore';
-import { demoStore } from '../data/demoStore';
+import { isLowStock, suggestedOrder, stockAfter } from '../src/lib/inventory';
+import { inventoryStore } from '../src/data/inventoryStore';
+import { demoStore } from '../src/data/demoStore';
 describe('inventory rules', () => {
  test('stock at minimum is low stock',()=>expect(isLowStock({quantity:3,minimum_stock:3})).toBe(true));
  test('stock below minimum is low stock',()=>expect(isLowStock({quantity:2,minimum_stock:3})).toBe(true));
