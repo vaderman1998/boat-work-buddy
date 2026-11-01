@@ -381,7 +381,7 @@ const Index = () => {
           )}
         </div>
 
-        <Tabs defaultValue="active" className="w-full">
+        <Tabs defaultValue={jobs.some(job => job.status === 'completed' && window.location.hash === `#job-card-${job.id}`) ? 'completed' : 'active'} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="active" className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
@@ -440,7 +440,7 @@ const Index = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {completedJobs.map(job => (
-                  <JobCard key={job.id} job={job} />
+                  <div key={job.id} id={`job-card-${job.id}`} className="scroll-mt-24"><JobCard job={job} /></div>
                 ))}
               </div>
             )}
