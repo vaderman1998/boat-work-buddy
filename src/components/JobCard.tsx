@@ -1135,6 +1135,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
             {(user || isDemoMode) && <InventoryJobPicker jobId={job.id} />}
             {(user || isDemoMode) && (
               <div className="border-t pt-2 space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">Or enter a part manually</p>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <Label htmlFor="partName" className="text-xs">Part Name</Label>
