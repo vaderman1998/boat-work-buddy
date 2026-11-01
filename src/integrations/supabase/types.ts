@@ -59,6 +59,234 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_items: {
+        Row: {
+          category: string
+          cost: number
+          created_at: string
+          id: string
+          location_id: string | null
+          minimum_stock: number
+          name: string
+          notes: string
+          quantity: number
+          sku: string
+          supplier_id: string | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          cost?: number
+          created_at?: string
+          id?: string
+          location_id?: string | null
+          minimum_stock?: number
+          name: string
+          notes?: string
+          quantity?: number
+          sku?: string
+          supplier_id?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          cost?: number
+          created_at?: string
+          id?: string
+          location_id?: string | null
+          minimum_stock?: number
+          name?: string
+          notes?: string
+          quantity?: number
+          sku?: string
+          supplier_id?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_locations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      inventory_movements: {
+        Row: {
+          actor_id: string | null
+          actor_name: string
+          boat_name: string
+          change: number
+          created_at: string
+          id: string
+          item_id: string
+          job_id: string | null
+          job_name: string
+          quantity_after: number
+          reason: string
+          updated_at: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_name: string
+          boat_name?: string
+          change: number
+          created_at?: string
+          id?: string
+          item_id: string
+          job_id?: string | null
+          job_name?: string
+          quantity_after: number
+          reason: string
+          updated_at?: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_name?: string
+          boat_name?: string
+          change?: number
+          created_at?: string
+          id?: string
+          item_id?: string
+          job_id?: string | null
+          job_name?: string
+          quantity_after?: number
+          reason?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_movements_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_orders: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          ordered_by: string | null
+          quantity: number
+          received_at: string | null
+          received_by: string | null
+          status: string
+          supplier_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          ordered_by?: string | null
+          quantity: number
+          received_at?: string | null
+          received_by?: string | null
+          status?: string
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          ordered_by?: string | null
+          quantity?: number
+          received_at?: string | null
+          received_by?: string | null
+          status?: string
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_orders_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_orders_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_suppliers: {
+        Row: {
+          contact: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          updated_at: string
+        }
+        Insert: {
+          contact?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name: string
+          phone?: string
+          updated_at?: string
+        }
+        Update: {
+          contact?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       job_notes: {
         Row: {
           content: string
@@ -93,6 +321,7 @@ export type Database = {
           cost_per_unit: number
           created_at: string
           id: string
+          inventory_item_id: string | null
           job_id: string
           name: string
           quantity: number
@@ -101,6 +330,7 @@ export type Database = {
           cost_per_unit: number
           created_at?: string
           id?: string
+          inventory_item_id?: string | null
           job_id: string
           name: string
           quantity?: number
@@ -109,11 +339,19 @@ export type Database = {
           cost_per_unit?: number
           created_at?: string
           id?: string
+          inventory_item_id?: string | null
           job_id?: string
           name?: string
           quantity?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "job_parts_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "job_parts_job_id_fkey"
             columns: ["job_id"]
@@ -263,8 +501,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      adjust_inventory_stock: {
+        Args: { amount: number; item_id: string; note: string }
+        Returns: undefined
+      }
       calculate_job_total_hours: { Args: { job_uuid: string }; Returns: number }
       is_demo_user: { Args: never; Returns: boolean }
+      receive_inventory_order: {
+        Args: { order_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
