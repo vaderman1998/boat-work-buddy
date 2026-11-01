@@ -1103,7 +1103,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
                         Qty: {part.quantity} × ${part.cost_per_unit.toFixed(2)} = ${(part.quantity * part.cost_per_unit).toFixed(2)}
                       </p>
                     </div>
-                    {user && (
+                    {(user || isDemoMode) && (
                       <div className="flex gap-1">
                         <Button
                           size="sm"
