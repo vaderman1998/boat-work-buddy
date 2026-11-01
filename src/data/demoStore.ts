@@ -4,6 +4,7 @@ import { mockJobs, mockParts, mockNotes, mockTimeSessions } from "@/data/mockDat
 import type { Job, JobPart, JobNote } from "@/hooks/useJobs";
 import type { TimeSession } from "@/hooks/useTimeSessions";
 import type { Customer, CustomerInput } from "@/hooks/useCustomers";
+import { inventoryStore } from '@/data/inventoryStore';
 
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value));
 
@@ -97,6 +98,7 @@ export const demoStore = {
     return clone(job);
   },
   deleteJob(id: string) {
+    parts.filter(p => p.job_id === id).forEach(p => this.deletePart(p.id));
     jobs = jobs.filter((j) => j.id !== id);
     parts = parts.filter((p) => p.job_id !== id);
     notes = notes.filter((n) => n.job_id !== id);
@@ -109,6 +111,10 @@ export const demoStore = {
       a.created_at.localeCompare(b.created_at)
     ),
   addPart(input: Omit<JobPart, "id" | "created_at">): JobPart {
+    if (input.inventory_item_id) {
+      if (!Number.isInteger(input.quantity) || input.quantity <= 0) throw new Error('Quantity must be a positive whole number');
+      inventoryStore.change(input.inventory_item_id, -input.quantity, 'Used on job', jobs.find(j => j.id === input.job_id));
+    }
     const part: JobPart = { ...input, id: newId(), created_at: new Date().toISOString() };
     parts = [...parts, part];
     return clone(part);
@@ -116,10 +122,17 @@ export const demoStore = {
   updatePart(id: string, updates: Partial<JobPart>): JobPart {
     const part = parts.find((p) => p.id === id);
     if (!part) throw new Error("Part not found");
+    if (part.inventory_item_id && updates.quantity !== undefined) {
+      if (!Number.isInteger(updates.quantity) || updates.quantity <= 0) throw new Error('Quantity must be a positive whole number');
+      const change = part.quantity - updates.quantity;
+      inventoryStore.change(part.inventory_item_id, change, change < 0 ? 'Used on job' : 'Returned from job', jobs.find(j => j.id === part.job_id));
+    }
     Object.assign(part, updates);
     return clone(part);
   },
   deletePart(id: string) {
+    const part = parts.find(p => p.id === id);
+    if (part?.inventory_item_id) inventoryStore.change(part.inventory_item_id, part.quantity, 'Returned from job', jobs.find(j => j.id === part.job_id));
     parts = parts.filter((p) => p.id !== id);
   },
 

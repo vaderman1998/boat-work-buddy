@@ -29,6 +29,7 @@ export interface Job {
 }
 
 export interface JobPart {
+  inventory_item_id?: string | null;
   id: string;
   job_id: string;
   name: string;
@@ -196,6 +197,7 @@ export const useDeleteJob = () => {
         title: "Job deleted successfully",
         description: "The job has been removed from your dashboard.",
       });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
     },
     onError: (error) => {
       toast({
@@ -226,6 +228,7 @@ export const useAddJobPart = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['job-parts'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
     },
     onError: (error) => {
       toast({
@@ -301,6 +304,7 @@ export const useUpdateJobPart = () => {
         title: "Part updated",
         description: "Part has been updated successfully.",
       });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
     },
     onError: (error) => {
       toast({
@@ -337,6 +341,7 @@ export const useDeleteJobPart = () => {
         title: "Part removed",
         description: "Part has been removed from the job.",
       });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
     },
     onError: (error) => {
       toast({

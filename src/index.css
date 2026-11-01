@@ -106,6 +106,16 @@ All colors MUST be HSL.
 }
 
 @layer base {
+  .inventory-theme {
+    --primary: 213 68% 15%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 206 62% 27%;
+    --secondary-foreground: 0 0% 100%;
+    --inventory-teal: 191 56% 40%;
+    --accent: 178 42% 55%;
+    --accent-foreground: 213 68% 15%;
+    --ring: 191 56% 40%;
+  }
   * {
     @apply border-border;
   }

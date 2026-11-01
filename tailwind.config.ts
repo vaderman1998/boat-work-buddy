@@ -53,6 +53,7 @@ export default {
           light: "hsl(var(--maritime-light))",
         },
         gold: "hsl(var(--gold-accent))",
+        'inventory-teal': 'hsl(var(--inventory-teal))',
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
