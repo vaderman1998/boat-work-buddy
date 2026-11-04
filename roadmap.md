@@ -1,5 +1,6 @@
 # Inventory
-- [ ] Barcode entry, camera/photo scanning, item lookup and verification.
+- [x] Barcode entry, camera/photo scanning and item lookup; ten rule tests and demo photo-scanning checks passed.
+- [ ] Installed iPhone camera verification — requires testing camera permissions on a physical iPhone.
 - [x] Shared inventory tables, access rules, atomic stock changes and history.
 - [x] Inventory page: items, filters, locations, suppliers, reorder and receiving.
 - [x] Job inventory selection and dashboard warning/navigation.
