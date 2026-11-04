@@ -9,11 +9,13 @@ let movements: InventoryMovement[] = [];
 const copy = <T,>(value: T): T => structuredClone(value);
 export const inventoryStore = {
   list: () => copy({ items, suppliers, locations, orders, movements }),
-  saveItem(input: Omit<InventoryItem, 'id' | 'created_at' | 'updated_at'> & { id?: string }) {
+  saveItem(input: Omit<InventoryItem, 'id' | 'created_at' | 'updated_at' | 'barcode'> & { id?: string; barcode?: string }) {
+    input = { ...input, barcode: (input.barcode ?? '').trim() };
+    if (input.barcode && items.some(item => item.barcode === input.barcode && item.id !== input.id)) throw new Error('This barcode is already assigned to another item');
     const existing = items.find(i => i.id === input.id);
     if (existing) { Object.assign(existing, input, { quantity: existing.quantity, updated_at: now() }); return copy(existing); }
     stockAfter(0, input.quantity);
-    const item = { ...input, id: id(), created_at: now(), updated_at: now() };
+    const item = { ...input, barcode: input.barcode ?? '', id: id(), created_at: now(), updated_at: now() };
     items.push(item);
     if (item.quantity) this.change(item.id, 0, 'Opening stock', undefined, item.quantity);
     return copy(item);

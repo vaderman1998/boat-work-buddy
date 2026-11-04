@@ -1,8 +1,21 @@
 import { describe, expect, test } from 'bun:test';
-import { isLowStock, suggestedOrder, stockAfter } from '../src/lib/inventory';
+import { isLowStock, suggestedOrder, stockAfter, matchesInventorySearch } from '../src/lib/inventory';
 import { inventoryStore } from '../src/data/inventoryStore';
 import { demoStore } from '../src/data/demoStore';
 describe('inventory rules', () => {
+ test('barcodes preserve leading zeroes and find the correct item',()=>{
+  const item=inventoryStore.saveItem({name:'Barcode filter',barcode:' 0012345678905 ',category:'Consumables',sku:'B1',unit:'each',quantity:4,minimum_stock:1,cost:10,location_id:null,supplier_id:null,notes:''});
+  expect(item.barcode).toBe('0012345678905');
+  expect(matchesInventorySearch(item,'0012345678905')).toBe(true);
+  expect(matchesInventorySearch(item,'9999999999999')).toBe(false);
+ });
+ test('duplicate barcodes are rejected without changing stock',()=>{
+  const input={name:'Barcode spare',barcode:'0098765432105',category:'Parts & spares',sku:'',unit:'each',quantity:3,minimum_stock:1,cost:5,location_id:null,supplier_id:null,notes:''};
+  const item=inventoryStore.saveItem(input);
+  expect(()=>inventoryStore.saveItem({...input,name:'Duplicate'})).toThrow('already assigned');
+  const edited=inventoryStore.saveItem({...input,id:item.id,name:'Renamed',quantity:99});
+  expect(edited.barcode).toBe('0098765432105');expect(edited.quantity).toBe(3);
+ });
  test('stock at minimum is low stock',()=>expect(isLowStock({quantity:3,minimum_stock:3})).toBe(true));
  test('stock below minimum is low stock',()=>expect(isLowStock({quantity:2,minimum_stock:3})).toBe(true));
  test('stock above minimum is not low stock',()=>expect(isLowStock({quantity:4,minimum_stock:3})).toBe(false));
