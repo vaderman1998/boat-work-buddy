@@ -59,7 +59,7 @@ export function useInventoryAction() {
     }
     let result;
     switch(action.type) {
-      case 'item': { const { id, ...input } = action.input; const { quantity, ...details } = input; result = id ? await supabase.from('inventory_items').update(details).eq('id',id).select().single() : await supabase.from('inventory_items').insert(input).select().single(); break; }
+      case 'item': { const { id, ...input } = { ...action.input, barcode: action.input.barcode.trim() }; const { quantity, ...details } = input; result = id ? await supabase.from('inventory_items').update(details).eq('id',id).select().single() : await supabase.from('inventory_items').insert(input).select().single(); if (result.error?.code === '23505') throw new Error('This barcode is already assigned to another item'); break; }
       case 'supplier': { const { id, ...input } = action.input; result = id ? await supabase.from('inventory_suppliers').update(input).eq('id',id).select().single() : await supabase.from('inventory_suppliers').insert(input); break; }
       case 'location': { const { id, ...input } = action.input; result = id ? await supabase.from('inventory_locations').update(input).eq('id',id).select().single() : await supabase.from('inventory_locations').insert(input); break; }
       case 'deleteLocation': result = await supabase.from('inventory_locations').delete().eq('id',action.id); break;
